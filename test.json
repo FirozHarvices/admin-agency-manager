@@ -1,0 +1,89 @@
+{
+    "message": "Site description created successfully",
+    "site": {
+      "address": null,
+      "audience": "Individuals",
+      "category": "Marketing",
+      "description": "A fitness brand dedicated to empowering individuals on their",
+      "email": "test2@gmail.com",
+      "id": 26,
+      "json_object": {
+        "pages": [
+          {
+            "Home": {
+              "section_1": {
+                "description_text": "A fitness brand dedicated to empowering individuals on their fitness journey.",
+                "header_text": "Fitness Freak",
+                "section_name": "hero"
+              },
+              "section_2": {
+                "description_text": "We offer a variety of services to help individuals reach their fitness goals. From personalized training programs to nutrition guidance, we have you covered.",
+                "header_text": "Our Services",
+                "section_name": "service",
+                "service_1_description_text": "Tailored workout plans designed to suit your individual needs and help you achieve results.",
+                "service_1_header_text": "Personalized Training Programs",
+                "service_2_description_text": "Expert advice on nutrition to complement your training and optimize your performance.",
+                "service_2_header_text": "Nutrition Guidance",
+                "service_3_description_text": "Fun and energetic group classes led by experienced instructors to keep you motivated.",
+                "service_3_header_text": "Group Fitness Classes"
+              },
+              "section_3": {
+                "description_text": "At Fitness Freak, we are passionate about helping individuals become the best version of themselves. Our team of experienced trainers and nutritionists are dedicated to supporting you on your fitness journey every step of the way.",
+                "header_text": "About Us",
+                "section_name": "about"
+              }
+            }
+          },
+          {
+            "About": {
+              "section_1": {
+                "header_text": "Fitness Freak - Empowering Individuals",
+                "section_name": "about_hero"
+              },
+              "section_2": {
+                "mission_text": "Our mission is to inspire and motivate individuals to prioritize their health and well-being by providing top-notch fitness resources and support.",
+                "quote_text": "Empowering individuals to achieve their fitness goals and transform their lives through dedication and hard work.",
+                "section_name": "mission",
+                "values_text": "Our core values include dedication, perseverance, inclusivity, and continuous improvement in everything we do.",
+                "vision_text": "We envision a world where everyone is confident in their own skin and leading a healthy, active lifestyle."
+              }
+            }
+          },
+          {
+            "Contact": {
+              "section_1": {
+                "header_text": "A fitness brand dedicated to empowering individuals on their fitness journey.",
+                "section_name": "contact_hero"
+              },
+              "section_2": {
+                "content": "Fitness Freak is committed to helping individuals achieve their fitness goals. Whether you are a beginner or an experienced fitness enthusiast, we are here to support you every step of the way. Get in touch with us today to start your fitness transformation.",
+                "section_name": "get_in_touch"
+              }
+            }
+          },
+          {
+            "Blog": {
+              "section_1": {
+                "header_text": "Empower Your Fitness Journey with Fitness Freak",
+                "section_name": "blog_hero"
+              },
+              "section_2": {
+                "blog_1_description_text": "Are you looking to kickstart your fitness journey? Check out our top 10 tips for creating a successful fitness routine that will help you reach your goals faster. From setting realistic goals to finding a workout buddy, we've got you covered!",
+                "blog_1_header_text": "Top 10 Tips for Creating a Successful Fitness Routine",
+                "blog_2_description_text": "Nutrition plays a crucial role in achieving your fitness goals. Learn about the importance of fueling your body with the right nutrients to support your workouts and recovery. Discover the best foods to eat before and after your workouts for optimal performance.",
+                "blog_2_header_text": "The Importance of Nutrition in Your Fitness Journey",
+                "blog_3_description_text": "Struggling to stay motivated and consistent in your workouts? We've got you covered! Explore different strategies and techniques to keep yourself on track and maintain your fitness routine. From setting weekly goals to incorporating variety in your workouts, find out how to stay motivated on your fitness journey.",
+                "blog_3_header_text": "How to Stay Motivated and Consistent in Your Workouts",
+                "section_name": "blog_multiple"
+              }
+            }
+          }
+        ]
+      },
+      "name": null,
+      "phone": null,
+      "token": "",
+      "websiteName": "Fitness Freak"
+    }
+  }
+  

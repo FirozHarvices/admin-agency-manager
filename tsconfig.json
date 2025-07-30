@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "types": ["react", "react-dom", "jest", "prismjs"],
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "moduleResolution": "node",
+    "module": "ESNext",
+    "target": "ES6",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+   "include": ["src", "**/*.d.ts"],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "files": []
+}
