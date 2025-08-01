@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { AuthState } from '../../types';
+import { RootState } from '..';
 
 const initialState: AuthState = {
   user: null,
@@ -101,3 +102,4 @@ const authSlice = createSlice({
 
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;
+export const selectCurrentUser = (state: RootState) => state.auth.user;
