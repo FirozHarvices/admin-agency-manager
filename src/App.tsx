@@ -6,7 +6,6 @@ import { PublicRoute } from "./features/auth/components/PublicRoute";
 import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
 import { Toaster } from "react-hot-toast";
-import AgancyMasterPage from "./pages/AgancyMasterPage";
 import AgencyManagementPage from "./pages/AgencyManagementPage";
 
 function App() {
@@ -35,8 +34,12 @@ function App() {
           >
             {/* Nested Routes inside Protected Layout */}
             <Route index element={<div>Dashboard Page</div>} />
-            <Route path="billing-plan" element={<AgencyManagementPage />} />
-            <Route path="user-master" element={<AgancyMasterPage  />} />
+            <Route path="billing-plan" element={<div>billing plan</div>} />
+            <Route path="user-master" element={
+              <ProtectedRoute>
+               <AgencyManagementPage  />
+              </ProtectedRoute>
+              } />
           </Route>
         </Routes>
       </BrowserRouter>
