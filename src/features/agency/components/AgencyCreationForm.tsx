@@ -4,6 +4,8 @@ import { useState } from "react"
 import type React from "react"
 import { useCreateAgency } from "../hooks/useAgencyMutations" // Assuming this hook handles API calls, loading, and toasts
 import { type CreateAgencyPayload } from "../types" // Assuming this type definition exists
+import { useSelector } from "react-redux"
+import { selectCurrentUser } from "../../../store/slices/authSlice"
 
 // UI Components
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/Card"
@@ -13,9 +15,14 @@ import { Label } from "../../../components/ui/label"
 import { Textarea } from "../../../components/ui/textarea"
 import { Badge } from "../../../components/ui/badge"
 import { Separator } from "../../../components/ui/separator"
-import { Building2, Mail, Phone, Database, Cpu, Globe, ImageIcon, DollarSign, Receipt } from "lucide-react"
-import { selectCurrentUser } from "../../../store/slices/authSlice"
-import { useSelector } from "react-redux"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/Select" // Added Select imports
+import { Building2, Mail, Phone, Database, Cpu, Globe, ImageIcon, DollarSign } from "lucide-react"
 
 // Initial state for the form, matching the desired payload structure.
 const initialFormData = {
@@ -31,16 +38,23 @@ const initialFormData = {
   notes: "",
 }
 
+// Currency options for the Select component
+const currencyOptions = [
+  { value: "USD", label: "USD ($)" },
+  { value: "EUR", label: "EUR (€)" },
+  { value: "INR", label: "INR (₹)" },
+  { value: "CAD", label: "CAD (C$)" },
+  { value: "AUD", label: "AUD (A$)" },
+]
+
 export function AgencyCreationForm() {
   const [formData, setFormData] = useState(initialFormData)
   const createAgencyMutation = useCreateAgency()
-        const currentUser = useSelector(selectCurrentUser);
-
+  const currentUser = useSelector(selectCurrentUser)
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
-  
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,7 +68,7 @@ export function AgencyCreationForm() {
     const payload: CreateAgencyPayload = {
       ...formData,
       user_role: "Agency",
-      parent_user_id: currentUser.id, 
+      parent_user_id: currentUser.id,
     }
 
     createAgencyMutation.mutate(payload, {
@@ -164,7 +178,7 @@ export function AgencyCreationForm() {
                     min="1000"
                     step="1000"
                     value={formData.storage}
-                    onChange={(e) => handleInputChange("storage", Number.parseInt(e.target.value) || 0)}
+                    onChange={(e) => handleInputChange("storage", Number.parseInt(e.target.value))}
                     className="pl-10 border-[#E2E8F0] focus:border-[#5D50FE]"
                   />
                 </div>
@@ -182,7 +196,7 @@ export function AgencyCreationForm() {
                     min="10000"
                     step="10000"
                     value={formData.token_count}
-                    onChange={(e) => handleInputChange("token_count", Number.parseInt(e.target.value) || 0)}
+                    onChange={(e) => handleInputChange("token_count", Number.parseInt(e.target.value))}
                     className="pl-10 border-[#E2E8F0] focus:border-[#5D50FE]"
                   />
                 </div>
@@ -217,7 +231,7 @@ export function AgencyCreationForm() {
                     min="10"
                     step="10"
                     value={formData.image_count}
-                    onChange={(e) => handleInputChange("image_count", Number.parseInt(e.target.value) || 0)}
+                    onChange={(e) => handleInputChange("image_count", Number.parseInt(e.target.value))}
                     className="pl-10 border-[#E2E8F0] focus:border-[#5D50FE]"
                   />
                 </div>
@@ -248,25 +262,38 @@ export function AgencyCreationForm() {
                     min="0"
                     step="1"
                     value={formData.amount}
-                    onChange={(e) => handleInputChange("amount", Number.parseFloat(e.target.value) || 0)}
+                    onChange={(e) => handleInputChange("amount", Number.parseFloat(e.target.value))}
                     className="pl-10 border-[#E2E8F0] focus:border-[#5D50FE]"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 relative z-10">
                 <Label htmlFor="currency" className="text-[#1A202C] font-medium">
-                  Currency
+                  Currency *
                 </Label>
-                <div className="relative">
-                  <Receipt className="absolute left-3 top-3 h-4 w-4 text-[#718096]" />
-                  <Input
+                <Select
+                  value={formData.currency}
+                  onValueChange={(value) => handleInputChange("currency", value)}
+                >
+                  <SelectTrigger
                     id="currency"
-                    placeholder="e.g., USD"
-                    value={formData.currency}
-                    onChange={(e) => handleInputChange("currency", e.target.value.toUpperCase())}
-                    className="pl-10 border-[#E2E8F0] focus:border-[#5D50FE]"
-                  />
-                </div>
+                    className="border-[#E2E8F0] focus:border-[#5D50FE]"
+                  >
+                    <SelectValue placeholder="Select currency" />
+                  </SelectTrigger>
+                  <SelectContent 
+                    position="popper" 
+                    className="z-50"
+                    sideOffset={4}
+                    avoidCollisions={true}
+                  >
+                    {currencyOptions.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>
+                        {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

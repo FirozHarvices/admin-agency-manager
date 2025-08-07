@@ -35,3 +35,13 @@ export const dummyAgencies: Agency[] = [
     customers: [], // This agency has no customers, for testing the empty state
   },
 ];
+
+
+export const currencyOptions = [
+  { value: "USD", label: "USD ($)", symbol: "$" },
+  { value: "EUR", label: "EUR (€)", symbol: "€" },
+  { value: "INR", label: "INR (₹)", symbol: "₹" },
+  { value: "CAD", label: "CAD (C$)", symbol: "C$" },
+  { value: "AUD", label: "AUD (A$)", symbol: "A$" },
+];
+

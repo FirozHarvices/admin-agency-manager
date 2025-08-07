@@ -14,6 +14,7 @@ import { Input } from "../../../components/ui/input";
 import { Separator } from "../../../components/ui/separator";
 import { Badge } from "../../../components/ui/badge";
 import { useToast } from "../../../components/ui/use-toast";
+import { currencyOptions } from "../../UserMaster/data/dummy-data";
 
 // --- Props Interface ---
 interface TopUpModalProps {
@@ -41,14 +42,6 @@ const initialFormState: TopUpFormState = {
   currency: "USD",
 };
 
-// --- Static Data ---
-const currencyOptions = [
-  { value: "USD", label: "USD ($)", symbol: "$" },
-  { value: "EUR", label: "EUR (€)", symbol: "€" },
-  { value: "INR", label: "INR (₹)", symbol: "₹" },
-  { value: "CAD", label: "CAD (C$)", symbol: "C$" },
-  { value: "AUD", label: "AUD (A$)", symbol: "A$" },
-];
 
 const presetOptions = {
   storage: [1000, 5000, 10000, 20000],
