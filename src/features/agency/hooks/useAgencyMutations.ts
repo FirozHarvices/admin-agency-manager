@@ -1,38 +1,30 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createAgency, topUpAgency } from '../api';
 import { CreateAgencyPayload, TopUpAgencyPayload } from '../types';
-import { useToast } from '../../../components/ui/use-toast';
+import toast from 'react-hot-toast';
 
 
 export const useCreateAgency = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: (payload: CreateAgencyPayload) => createAgency(payload),
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Invalidate queries to refetch fresh data
       queryClient.invalidateQueries({ queryKey: ['agencies'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
 
-      toast({
-        title: 'Agency Created Successfully',
-        description: `${data.name} has been added to the system.`,
-      });
+      toast.success('Agency created successfully')
+
     },
     onError: (error) => {
-      toast({
-        title: 'Error Creating Agency',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(`${error} Error Creating Agency`)
     },
   });
 };
 
 export const useTopUpAgency = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   return useMutation({
     mutationFn: (payload: TopUpAgencyPayload) => topUpAgency(payload),
@@ -42,17 +34,11 @@ export const useTopUpAgency = () => {
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       queryClient.invalidateQueries({ queryKey: ['topUpHistory'] });
 
-      toast({
-        title: 'Top-Up Successful',
-        description: `Resources have been added to ${data.name}.`,
-      });
+      toast.success(`Top-up successful for ${data.name}`);
     },
     onError: (error) => {
-      toast({
-        title: 'Error Topping Up',
-        description: error.message,
-        variant: 'destructive',
-      });
+      toast.error(`${error.message || 'Error topping up agency'}`);
+
     },
   });
 };
