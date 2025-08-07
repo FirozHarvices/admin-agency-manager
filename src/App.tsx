@@ -36,9 +36,7 @@ function App() {
             <Route index element={<div>Dashboard Page</div>} />
             <Route path="billing-plan" element={<div>billing plan</div>} />
             <Route path="user-master" element={
-              <ProtectedRoute>
                <AgencyManagementPage  />
-              </ProtectedRoute>
               } />
           </Route>
         </Routes>
