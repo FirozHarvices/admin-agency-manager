@@ -69,7 +69,7 @@ const LoginForm = () => {
           <Button
             type="submit"
             className={cn(
-              'w-full transition-colors rounded-full py-3 text-base',
+              'w-full transition-colors bg-[#5D50FE] rounded-full py-3 text-base',
               (!isEmailValid || !isPasswordValid) && 'bg-gray-100 text-gray-400 cursor-not-allowed'
             )}
             disabled={
