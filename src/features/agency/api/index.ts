@@ -28,7 +28,7 @@ export const getDashboardStats = async (adminId: number): Promise<DashboardStats
         totalAgencies: agencies.length,
         
         // Sum the 'website_count' from each agency object
-        totalWebsites: agencies.reduce((sum, agency) => sum + agency.website_count, 0),
+        totalWebsites: agencies.reduce((sum, agency) => sum + (agency.total_website_count - agency.website_count), 0),
         
         // Sum the 'storage' (in MB), then convert the total to GB and format it
         totalStorageGB: parseFloat(
