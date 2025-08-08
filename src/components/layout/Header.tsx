@@ -37,14 +37,14 @@ export function Header() {
         <p className="text-sm text-brand-text-secondary">Let's create creative websites for your clients!</p>
       </div>
       <div className="flex items-center gap-6">
-          <div className="relative">
+          {/* <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-brand-text-secondary" />
           <input
             type="text"
             placeholder="Search for something"
             className="pl-10 pr-4 py-2 w-64 bg-white rounded-lg border border-brand-border focus:ring-1 focus:ring-brand-primary focus:outline-none"
           />
-        </div>
+        </div> */}
         
         <Dropdown
           button={
