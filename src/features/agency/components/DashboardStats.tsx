@@ -15,7 +15,7 @@ export const DashboardStats = ({ stats }: DashboardStatsProps) => (
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{stats.totalAgencies}</div>
-        <p className="text-xs text-muted-foreground">+2 from last month</p>
+        <p className="text-xs text-muted-foreground">Active agencies</p>
       </CardContent>
     </Card>
     <Card>

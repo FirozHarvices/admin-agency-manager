@@ -33,8 +33,8 @@ import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Separator } from "../../../components/ui/separator";
 import { Badge } from "../../../components/ui/badge";
-import { useToast } from "../../../components/ui/use-toast";
 import { currencyOptions } from "../../UserMaster/data/dummy-data";
+import toast from "react-hot-toast";
 
 // --- Props Interface ---
 interface TopUpModalProps {
@@ -70,7 +70,6 @@ const presetOptions = {
 };
 
 export function TopUpModal({ isOpen, onClose, agency }: TopUpModalProps) {
-  const { toast } = useToast();
   const [formState, setFormState] = useState<TopUpFormState>(initialFormState);
   const topUpMutation = useTopUpAgency();
 
@@ -96,21 +95,14 @@ export function TopUpModal({ isOpen, onClose, agency }: TopUpModalProps) {
       formState.websites +
       formState.images;
     if (totalResourcesAdded === 0) {
-      toast({
-        title: "No Resources Selected",
-        description: "Please add at least one resource to top up.",
-        variant: "destructive",
-      });
+      toast.error("Please add at least one resource to top up.")
+      
       return;
     }
-    if (formState.amount <= 0) {
-      toast({
-        title: "Amount Required",
-        description: "Please enter a valid billing amount for this top-up.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // if (formState.amount <= 0) {
+    //         toast.error("Please enter a valid billing amount for this top-up")
+    //   return;
+    // }
 
     const payload: TopUpAgencyPayload = {
       id: agency.id,

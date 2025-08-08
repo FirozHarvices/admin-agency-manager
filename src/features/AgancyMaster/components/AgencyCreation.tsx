@@ -9,15 +9,14 @@ import { Textarea } from "../../../components/ui/textarea"
 import { Badge } from "../../../components/ui/badge"
 import { Separator } from "../../../components/ui/separator"
 import { Building2, Mail, Phone, Database, Cpu, Globe, ImageIcon } from "lucide-react"
-import { useToast } from "../../../components/ui/use-toast"
 import { useAgencyCreation } from "../hooks/useAgencyCreation"
+import toast from "react-hot-toast"
 
 interface AgencyCreationProps {
   onAgencyCreated: (agency: any) => void
 }
 
 export function AgencyCreation({ onAgencyCreated }: AgencyCreationProps) {
-  const { toast } = useToast()
   const { formData, errors, handleInputChange, validateForm, resetForm } = useAgencyCreation()
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -40,10 +39,8 @@ export function AgencyCreation({ onAgencyCreated }: AgencyCreationProps) {
 
     onAgencyCreated(newAgency)
 
-    toast({
-      title: "Agency Created Successfully",
-      description: `${formData.name} has been added to the system.`,
-    })
+
+    // toast.suscess(`${formData.name} has been added to the system.`);
 
     resetForm()
   }
