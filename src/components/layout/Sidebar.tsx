@@ -63,10 +63,10 @@ export function Sidebar() {
       </div>
       
       <div className="mt-auto p-4 px-12">
-        <Button className="w-full bg-[#5D50FE]">
+        {/* <Button className="w-full bg-[#5D50FE]">
           <Crown color='#FFB31F' className="w-4 h-4 mr-2" />
           Upgrade Plan
-        </Button>
+        </Button> */}
       </div>
     </aside>
   );
