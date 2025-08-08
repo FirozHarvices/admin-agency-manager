@@ -173,7 +173,7 @@ export function TopUpHistory({
             )}
           </CardContent>
         </Card>
-        <Card>
+        {/* <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">
               Total Value (USD Est.)
@@ -189,7 +189,7 @@ export function TopUpHistory({
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card> */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">
