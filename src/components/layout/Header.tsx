@@ -32,7 +32,7 @@ export function Header() {
     <header className="h-20 flex-shrink-0 flex items-center justify-between px-8">
       <div>
         <h1 className="text-lg font-bold text-brand-text-primary">
-          Good Morning, {getFirstName(displayName)}! 👋
+          Great to see you, {getFirstName(displayName)}! 👋
         </h1>
         <p className="text-sm text-brand-text-secondary">Let's create creative websites for your clients!</p>
       </div>
