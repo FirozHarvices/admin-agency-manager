@@ -23,6 +23,8 @@ export const getAgencies = async (adminId: number): Promise<Agency[]> => {
  */
 export const getDashboardStats = async (adminId: number): Promise<DashboardStats> => {
     const agencies: Agency[] = await getAgencies(adminId); 
+
+    console.log("agencies", agencies)
      const stats: DashboardStats = {
         // Total number of agencies is simply the length of the array
         totalAgencies: agencies.length,
@@ -32,7 +34,7 @@ export const getDashboardStats = async (adminId: number): Promise<DashboardStats
         
         // Sum the 'storage' (in MB), then convert the total to GB and format it
         totalStorageGB: parseFloat(
-            (agencies.reduce((sum, agency) => sum + agency.storage, 0) / 1000).toFixed(1)
+            (agencies.reduce((sum, agency) => sum + (agency.total_storage - agency.storage), 0) / 1000).toFixed(1)
         ),
         
         // Sum the 'token_count', then convert the total to thousands (K) and format it
@@ -40,6 +42,8 @@ export const getDashboardStats = async (adminId: number): Promise<DashboardStats
     (agencies.reduce((sum, agency) => sum + (agency.total_token_count - agency.token_count), 0) / 1000).toFixed(0)
 ),
     };
+
+    console.log(stats, "Stats")
 return stats;
   }
 
