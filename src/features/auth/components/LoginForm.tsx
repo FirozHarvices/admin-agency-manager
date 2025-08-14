@@ -6,17 +6,17 @@ import { useLoginWithPassword } from "../hooks/useLoginWithPassword";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(""); // Added password state
+  const [password, setPassword] = useState("");
 
-  const loginMutation = useLoginWithPassword(); // Changed to password login hook
+  const loginMutation = useLoginWithPassword(); 
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate({ email, password }); // Pass email and password
+    loginMutation.mutate({ email, password }); 
   };
 
   const isEmailValid = email.includes("@") && email.includes(".");
-  const isPasswordValid = password.length >= 8; // Example validation for password
+  const isPasswordValid = password.length >= 8; 
 
   return (
     <div className="bg-white p-8 rounded-2xl shadow-sm w-full flex flex-col min-h-[400px]">

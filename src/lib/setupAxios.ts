@@ -24,7 +24,7 @@ export const setupAxios = () => {
       if (data && data.status === false) {
         // Convert backend error to rejected promise
         const error = new Error(data.message || 'Request failed');
-        error.response = response;
+      error.response = response;
         return Promise.reject(error);
       }
       return response;
@@ -33,7 +33,8 @@ export const setupAxios = () => {
       const status = error?.response?.status;
       const isLoginEndpoint = error.config?.url?.includes('/auth/') || 
                              error.config?.url?.includes('/user/getotp') ||
-                             error.config?.url?.includes('/user/login');
+                             error.config?.url?.includes('/user/login') ||
+                             error.config?.url?.includes('/user/adminLogin');
 
       // Handle 401 errors (real HTTP 401)
       if (status === 401) {

@@ -38,7 +38,7 @@ axiosClient.interceptors.response.use(
     const url = error.config?.url || '';
     
     // Check if it's an auth endpoint
-    const isAuthEndpoint = url.includes('/user/getotp') || url.includes('/user/login');
+    const isAuthEndpoint = url.includes('/user/getotp') || url.includes('/user/login')  || url?.includes('/user/adminLogin');
     
     // Handle 401 errors
     if (status === 401 && !isAuthEndpoint) {
