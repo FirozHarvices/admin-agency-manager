@@ -63,10 +63,10 @@ const initialFormState: TopUpFormState = {
 };
 
 const presetOptions = {
-  storage: [1000, 5000, 10000, 20000],
-  tokens: [50000, 100000, 500000, 1000000],
-  websites: [5, 10, 25, 50],
-  images: [100, 250, 500, 1000],
+  storage: [600, 1000, 5000, 10000, 20000],
+  tokens: [20000, 50000, 100000, 500000, 1000000],
+  websites: [1,5, 10, 25, 50],
+  images: [35, 100, 250, 500, 1000],
 };
 
 export function TopUpModal({ isOpen, onClose, agency }: TopUpModalProps) {

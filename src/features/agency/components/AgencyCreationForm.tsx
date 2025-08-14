@@ -29,10 +29,10 @@ const initialFormData = {
   name: "",
   phone: "",
   email: "",
-  storage: 1000, // Default to 1 GB
-  token_count: 10000, // Default to 10K tokens
-  website_count: 1,
-  image_count: 10,
+  storage: 3000, // Default to 1 GB
+  token_count: 60000, // Default to 10K tokens
+  website_count: 3,
+  image_count: 85,
   amount: 99, // Default billing amount
   currency: "USD",
   notes: "",
