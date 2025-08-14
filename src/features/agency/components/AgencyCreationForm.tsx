@@ -228,8 +228,8 @@ export function AgencyCreationForm() {
                   <Input
                     id="image_count"
                     type="number"
-                    min="10"
-                    step="10"
+                    min="1"
+                    step="1"
                     value={formData.image_count}
                     onChange={(e) => handleInputChange("image_count", Number.parseInt(e.target.value))}
                     className="pl-10 border-[#E2E8F0] focus:border-[#5D50FE]"
