@@ -73,7 +73,7 @@ export const createAgency = async (payload: CreateAgencyPayload): Promise<Agency
  * Tops up resources for an existing agency.
  */
 export const topUpAgency = async (payload: TopUpAgencyPayload): Promise<Agency> => {
-  const response = await axiosClient.put<ApiResponse<Agency>>(`/user/update`, payload);
+  const response = await axiosClient.put<ApiResponse<Agency>>(`/user/topup`, payload);
   if (!response.data.status) {
     throw new Error(response.data.message || 'Failed to top up resources.');
   }
