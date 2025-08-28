@@ -206,7 +206,7 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
           className="bg-[#5D50FE] text-white hover:bg-[#4A3FE7] disabled:bg-opacity-50"
         >
           <Save className="w-4 h-4 mr-2" />
-          {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+          {updateMutation.isPending ? 'Saving...' : 'Save & Verify'}
         </Button>
       </div>
     </>
