@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Agency } from "../types";
 
-// --- UI Component Imports ---
 
-// --- Feature-Specific Imports ---
 import { TopUpModal } from "./TopUpModal";
+import { AgencyActionModal } from "./AgencyActionModal";
+import { useDeleteAgency, useSuspendAgency, useReactivateAgency } from "../hooks/useAgencyMutations";
 
-// --- Icon Imports ---
-import { Building2, Mail, Phone, Database, Cpu, Globe, ImageIcon, Plus, MoreHorizontal, TrendingUp, Search } from "lucide-react";
+import { Building2, Mail, Phone, Database, Cpu, Globe, ImageIcon, Plus, MoreHorizontal, TrendingUp, Search, Pause, Play, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/Card";
 import { Skeleton } from "../../../components/ui/skeleton";
 import { Separator } from "../../../components/ui/separator";
@@ -29,11 +28,6 @@ const getUsagePercentage = (used: number, total: number) => {
   return Math.round((used / total) * 100);
 };
 
-const getUsageColorClass = (percentage: number): string => {
-  if (percentage >= 90) return "bg-red-500";
-  if (percentage >= 75) return "bg-yellow-500";
-  return "bg-green-500";
-};
 
 // --- Skeleton Component for Loading State ---
 const AgencyListSkeleton = () => (
@@ -71,13 +65,19 @@ const AgencyListSkeleton = () => (
 export function AgencyList({ agencies, isLoading }: AgencyListProps) {
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
+  
+  // New state for action modal
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [actionType, setActionType] = useState<'delete' | 'suspend' | 'reactivate'>('delete');
 
-  const handleOpenTopUp = (agency: Agency) => {
-    setSelectedAgency(agency);
-    setIsTopUpModalOpen(true);
-  };
+  // Mutation hooks
+  const deleteAgencyMutation = useDeleteAgency();
+  const suspendAgencyMutation = useSuspendAgency();
+  const reactivateAgencyMutation = useReactivateAgency();
 
-    const getUsageColor = (percentage: number) => {
+
+
+  const getUsageColor = (percentage: number) => {
     if (percentage >= 90) return "text-red-500"
     if (percentage >= 75) return "text-yellow-500"
     return "text-green-500"
@@ -86,6 +86,41 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
   const handleCloseTopUp = () => {
     setIsTopUpModalOpen(false);
     // Setting agency to null after a delay can make the modal closing animation smoother
+    setTimeout(() => setSelectedAgency(null), 300);
+  };
+
+  // New handlers for agency actions
+  const handleActionClick = (agency: Agency, type: 'delete' | 'suspend' | 'reactivate') => {
+    setSelectedAgency(agency);
+    setActionType(type);
+    setIsActionModalOpen(true);
+  };
+
+  const handleActionConfirm = async () => {
+    if (!selectedAgency) return;
+
+    try {
+      switch (actionType) {
+        case 'delete':
+          await deleteAgencyMutation.mutateAsync(selectedAgency.id);
+          break;
+        case 'suspend':
+          await suspendAgencyMutation.mutateAsync(selectedAgency.id);
+          break;
+        case 'reactivate':
+          await reactivateAgencyMutation.mutateAsync(selectedAgency.id);
+          break;
+      }
+      setIsActionModalOpen(false);
+      setSelectedAgency(null);
+    } catch (error) {
+      // Error handling is done in the mutation hooks
+      console.error('Action failed:', error);
+    }
+  };
+
+  const handleCloseActionModal = () => {
+    setIsActionModalOpen(false);
     setTimeout(() => setSelectedAgency(null), 300);
   };
 
@@ -112,10 +147,6 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
        {agencies.map((agency) => {
     console.log("Agency Data:", agency);
 
-    // --- CORRECTED LOGIC ---
-    // The fields like `storage` represent the REMAINING amount.
-    // We calculate the USED amount to show the progress.
-    // Used = Total - Remaining
 
     const usedStorage = agency.total_storage - agency.storage;
     const usedWebsites = agency.total_website_count - agency.website_count;
@@ -131,24 +162,37 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
     return (
       <Card key={agency.id} className="border-[#E2E8F0] hover:shadow-lg transition-shadow">
         <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-[#1A202C] flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-[#5D50FE]" />
-                {agency.name}
+          <div className="flex items-start justify-between gap-3">
+            {/* Left section - flexible to grow */}
+            <div className="min-w-0 flex-1 space-y-1">
+              <CardTitle className="text-[#1A202C] flex items-center gap-2 text-lg">
+                <Building2 className="w-5 h-5 text-[#5D50FE] flex-shrink-0" />
+                <span 
+                  className="truncate cursor-default" 
+                  title={agency.name}
+                >
+                  {agency.name}
+                </span>
               </CardTitle>
-              <div className="flex items-center gap-4 text-sm text-[#718096]">
-                <div className="flex items-center gap-1">
-                  <Mail className="w-4 h-4" />
-                  {agency.email}
+              <div className="flex items-center gap-4 text-xs text-[#718096]">
+                <div className="flex items-center gap-1 min-w-0">
+                  <Mail className="w-3 h-3 flex-shrink-0" />
+                  <span 
+                    className="truncate cursor-default" 
+                    title={agency.email}
+                  >
+                    {agency.email}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Phone className="w-4 h-4" />
-                  {agency.phone}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Phone className="w-3 h-3" />
+                  <span title={agency.phone}>{agency.phone}</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            
+            {/* Right section - fixed width elements */}
+            <div className="flex items-center gap-2 flex-shrink-0">
               <Badge
                 variant={agency.is_active === true ? "default" : "secondary"}
                 className={agency.is_active === true ? "bg-green-100 text-green-800" : ""}
@@ -157,7 +201,7 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
               </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -171,11 +215,39 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
                     <Plus className="w-4 h-4 mr-2" />
                     Top Up Resources
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    View Analytics
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+                    
+                    {/* New action items */}
+                    {agency.is_active ? (
+                      <DropdownMenuItem
+                        onClick={() => handleActionClick(agency, 'suspend')}
+                        className="text-yellow-600 focus:text-yellow-600"
+                      >
+                        <Pause className="w-4 h-4 mr-2" />
+                        Suspend Agency
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => handleActionClick(agency, 'reactivate')}
+                        className="text-green-600 focus:text-green-600"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Reactivate Agency
+                      </DropdownMenuItem>
+                    )}
+                    
+                    <DropdownMenuItem
+                      onClick={() => handleActionClick(agency, 'delete')}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Agency
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuItem>
+                      <TrendingUp className="w-4 h-4 mr-2" />
+                      View Analytics
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
@@ -294,6 +366,22 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
           isOpen={isTopUpModalOpen}
           onClose={handleCloseTopUp}
           agency={selectedAgency}
+        />
+      )}
+
+      {/* Action confirmation modal */}
+      {selectedAgency && (
+        <AgencyActionModal
+          isOpen={isActionModalOpen}
+          onClose={handleCloseActionModal}
+          onConfirm={handleActionConfirm}
+          agency={selectedAgency}
+          actionType={actionType}
+          isLoading={
+            deleteAgencyMutation.isPending ||
+            suspendAgencyMutation.isPending ||
+            reactivateAgencyMutation.isPending
+          }
         />
       )}
     </div>

@@ -10,7 +10,6 @@ import { Badge } from "../../../components/ui/badge"
 import { Separator } from "../../../components/ui/separator"
 import { Building2, Mail, Phone, Database, Cpu, Globe, ImageIcon } from "lucide-react"
 import { useAgencyCreation } from "../hooks/useAgencyCreation"
-import toast from "react-hot-toast"
 
 interface AgencyCreationProps {
   onAgencyCreated: (agency: any) => void

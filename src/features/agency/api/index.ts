@@ -79,3 +79,33 @@ export const topUpAgency = async (payload: TopUpAgencyPayload): Promise<Agency> 
   }
   return response.data.data;
 };
+
+/**
+ * Deletes an agency.
+ */
+export const deleteAgency = async (agencyId: number): Promise<void> => {
+  const response = await axiosClient.delete<ApiResponse<void>>(`/user/delete/${agencyId}`);
+  if (!response.data.status) {
+    throw new Error(response.data.message || 'Failed to delete agency.');
+  }
+};
+
+/**
+ * Suspends an agency.
+ */
+export const suspendAgency = async (agencyId: number): Promise<void> => {
+  const response = await axiosClient.delete<ApiResponse<void>>(`/user/suspend/${agencyId}`);
+  if (!response.data.status) {
+    throw new Error(response.data.message || 'Failed to suspend agency.');
+  }
+};
+
+/**
+ * Reactivates a suspended agency.
+ */
+export const reactivateAgency = async (agencyId: number): Promise<void> => {
+  const response = await axiosClient.put<ApiResponse<void>>(`/user/active/${agencyId}`);
+  if (!response.data.status) {
+    throw new Error(response.data.message || 'Failed to reactivate agency.');
+  }
+};

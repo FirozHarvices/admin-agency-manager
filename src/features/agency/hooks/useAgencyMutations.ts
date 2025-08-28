@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createAgency, topUpAgency } from '../api';
+import { createAgency, topUpAgency, deleteAgency, suspendAgency, reactivateAgency } from '../api';
 import { CreateAgencyPayload, TopUpAgencyPayload } from '../types';
 import toast from 'react-hot-toast';
 
@@ -39,6 +39,60 @@ export const useTopUpAgency = () => {
     onError: (error) => {
       toast.error(`${error.message || 'Error topping up agency'}`);
 
+    },
+  });
+};
+
+export const useReactivateAgency = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (agencyId: number) => reactivateAgency(agencyId),
+    onSuccess: () => {
+      // Invalidate queries to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['agencies'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+
+      toast.success('Agency reactivated successfully');
+    },
+    onError: (error) => {
+      toast.error(`${error.message || 'Error reactivating agency'}`);
+    },
+  });
+};
+
+export const useSuspendAgency = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (agencyId: number) => suspendAgency(agencyId),
+    onSuccess: () => {
+      // Invalidate queries to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['agencies'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+
+      toast.success('Agency suspended successfully');
+    },
+    onError: (error) => {
+      toast.error(`${error.message || 'Error suspending agency'}`);
+    },
+  });
+};
+
+export const useDeleteAgency = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (agencyId: number) => deleteAgency(agencyId),
+    onSuccess: () => {
+      // Invalidate queries to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['agencies'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+
+      toast.success('Agency deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(`${error.message || 'Error deleting agency'}`);
     },
   });
 };
