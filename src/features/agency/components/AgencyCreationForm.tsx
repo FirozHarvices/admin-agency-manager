@@ -47,7 +47,10 @@ const currencyOptions = [
   { value: "AUD", label: "AUD (A$)" },
 ]
 
-export function AgencyCreationForm() {
+interface AgencyCreationFormProps {
+  onAgencyCreated: () => void; 
+}
+export function AgencyCreationForm({ onAgencyCreated }: AgencyCreationFormProps) { 
   const [formData, setFormData] = useState(initialFormData)
   const createAgencyMutation = useCreateAgency()
   const currentUser = useSelector(selectCurrentUser)
@@ -74,6 +77,7 @@ export function AgencyCreationForm() {
     createAgencyMutation.mutate(payload, {
       onSuccess: () => {
         setFormData(initialFormData)
+        onAgencyCreated();
       },
       onError: (error) => {
         // The useCreateAgency hook will likely show an error toast.
