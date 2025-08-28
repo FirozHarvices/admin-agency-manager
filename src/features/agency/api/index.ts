@@ -7,15 +7,23 @@ import { Agency, CreateAgencyPayload, TopUpAgencyPayload, DashboardStats, TopUpH
 /**
  * Fetches the list of all agencies.
  */
-export const getAgencies = async (adminId: number): Promise<Agency[]> => {
-  const response = await axiosClient.get<ApiResponse<{ users: Agency[] }>>(`/user/getAgency/${adminId}`);
-  if (!response.data || !response.data.status) { // Added a check for response.data itself
+export const getAgencies = async (
+  adminId: number
+): Promise<Agency[]> => {
+  const response = await axiosClient.get<ApiResponse<Agency[]>>(
+    `/user/getAgency/${adminId}`
+  );
+
+  if (!response.data || !response.data.status) {
     throw new Error(response.data?.message || 'Failed to fetch agencies.');
   }
-  console.log("Agencies fetched:", response.data.data    ); 
-  return response.data.data;
-};
 
+  const sortedData = response.data.data.sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  return sortedData;
+};
 
 /**
  * Fetches the dashboard stats.
