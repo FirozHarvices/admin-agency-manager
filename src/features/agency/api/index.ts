@@ -117,3 +117,35 @@ export const reactivateAgency = async (agencyId: number): Promise<void> => {
     throw new Error(response.data.message || 'Failed to reactivate agency.');
   }
 };
+
+/**
+ * Updates an agency's basic details (email/phone).
+ */
+export interface UpdateAgencyPayload {
+  id: number;
+  phone?: string;
+  email?: string;
+}
+
+export interface VerifyOtpPayload {
+  id: number;
+  email: string;
+  otp: string;
+}
+
+export const updateAgency = async (payload: UpdateAgencyPayload): Promise<Agency> => {
+  const response = await axiosClient.put<ApiResponse<Agency>>(`/user/update`, payload);
+  if (!response.data.status) {
+    throw new Error(response.data.message || 'Failed to update agency.');
+  }
+  return response.data.data;
+};
+
+
+export const verifyOtp = async (payload: VerifyOtpPayload): Promise<any> => {
+  const response = await axiosClient.post<ApiResponse<any>>(`/user/verify-otp`, payload);
+  if (!response.data.status) {
+    throw new Error(response.data.message || 'Invalid verification code.');
+  }
+  return response.data.data;
+};

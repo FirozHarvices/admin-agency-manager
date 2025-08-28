@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createAgency, topUpAgency, deleteAgency, suspendAgency, reactivateAgency } from '../api';
+import { createAgency, topUpAgency, deleteAgency, suspendAgency, reactivateAgency, updateAgency, UpdateAgencyPayload, verifyOtp, VerifyOtpPayload } from '../api';
 import { CreateAgencyPayload, TopUpAgencyPayload } from '../types';
 import toast from 'react-hot-toast';
 
@@ -93,6 +93,37 @@ export const useDeleteAgency = () => {
     },
     onError: (error) => {
       toast.error(`${error.message || 'Error deleting agency'}`);
+    },
+  });
+};
+
+export const useVerifyOtp = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: VerifyOtpPayload) => verifyOtp(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agencies'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+    },
+    onError: (error: any) => {
+      throw error;
+    },
+  });
+};
+
+export const useUpdateAgency = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: UpdateAgencyPayload) => updateAgency(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agencies'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      toast.success(`Agency updated successfully`);
+    },
+    onError: (error) => {
+      toast.error(`${error.message || 'Error updating agency'}`);
     },
   });
 };

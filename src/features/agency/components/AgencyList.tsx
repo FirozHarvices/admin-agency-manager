@@ -4,9 +4,10 @@ import { Agency } from "../types";
 
 import { TopUpModal } from "./TopUpModal";
 import { AgencyActionModal } from "./AgencyActionModal";
+import { EditAgencyModal } from "./EditAgencyModal";
 import { useDeleteAgency, useSuspendAgency, useReactivateAgency } from "../hooks/useAgencyMutations";
 
-import { Building2, Mail, Phone, Database, Cpu, Globe, ImageIcon, Plus, MoreHorizontal, TrendingUp, Search, Pause, Play, Trash2 } from "lucide-react";
+import { Building2, Mail, Phone, Database, Cpu, Globe, ImageIcon, Plus, MoreHorizontal, TrendingUp, Search, Pause, Play, Trash2, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/Card";
 import { Skeleton } from "../../../components/ui/skeleton";
 import { Separator } from "../../../components/ui/separator";
@@ -69,6 +70,7 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
   // New state for action modal
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [actionType, setActionType] = useState<'delete' | 'suspend' | 'reactivate'>('delete');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Mutation hooks
   const deleteAgencyMutation = useDeleteAgency();
@@ -243,6 +245,11 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
                       Delete Agency
                     </DropdownMenuItem>
                     
+                    <DropdownMenuItem onClick={() => { setSelectedAgency(agency); setIsEditModalOpen(true); }}>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit Agency
+                    </DropdownMenuItem>
+                    
                     <DropdownMenuItem>
                       <TrendingUp className="w-4 h-4 mr-2" />
                       View Analytics
@@ -383,6 +390,10 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
             reactivateAgencyMutation.isPending
           }
         />
+      )}
+
+      {selectedAgency && (
+        <EditAgencyModal isOpen={isEditModalOpen} onClose={() => { setIsEditModalOpen(false); setTimeout(() => setSelectedAgency(null), 300); }} agency={selectedAgency} />
       )}
     </div>
   );
