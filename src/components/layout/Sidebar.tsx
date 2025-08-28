@@ -1,11 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard,Users, CreditCard, Sparkles, Crown } from 'lucide-react';
-import { Button } from '../ui/button';
+import { LayoutDashboard, Sparkles } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/billing-plan', label: 'Billing Plan', icon: CreditCard },
-  { to: '/user-master', label: 'User Master', icon: Users },
+  // { to: '/billing-plan', label: 'Billing Plan', icon: CreditCard },
+  // { to: '/user-master', label: 'User Master', icon: Users },
 ];
 
 // const supportItems = [

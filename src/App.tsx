@@ -33,11 +33,11 @@ function App() {
             }
           >
             {/* Nested Routes inside Protected Layout */}
-            <Route index element={<div>Dashboard Page</div>} />
-            <Route path="billing-plan" element={<div>billing plan</div>} />
+            <Route index element={<AgencyManagementPage  />} />
+            {/* <Route path="billing-plan" element={<div>billing plan</div>} />
             <Route path="user-master" element={
                <AgencyManagementPage  />
-              } />
+              } /> */}
           </Route>
         </Routes>
       </BrowserRouter>

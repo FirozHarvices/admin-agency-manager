@@ -37,8 +37,8 @@ export default function AgencyManagementPage() {
   return (
       <div id="agency-management-main-content"  className="container p-4 mx-auto sm:p-6 overflow-auto h-full">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold">Agency Management Portal</h1>
-          <p className="text-muted-foreground">Manage agencies, billing, and resource allocation.</p>
+          <h1 className="text-2xl font-bold">Agency Management Portal</h1>
+          <p className="text-muted-foreground text-base">Manage agencies, billing, and resource allocation.</p>
         </header>
 
         {isLoadingStats ? (
