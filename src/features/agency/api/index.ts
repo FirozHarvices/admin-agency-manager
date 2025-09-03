@@ -142,10 +142,44 @@ export const updateAgency = async (payload: UpdateAgencyPayload): Promise<Agency
 };
 
 
-export const verifyOtp = async (payload: VerifyOtpPayload): Promise<any> => {
-  const response = await axiosClient.post<ApiResponse<any>>(`/user/verify-otp`, payload);
+export const verifyOtp = async (payload: VerifyOtpPayload): Promise<unknown> => {
+  const response = await axiosClient.post<ApiResponse<unknown>>(`/user/verify-otp`, payload);
   if (!response.data.status) {
     throw new Error(response.data.message || 'Invalid verification code.');
   }
   return response.data.data;
+};
+
+/**
+ * Website Management APIs
+ */
+
+/**
+ * Deletes a website.
+ */
+export const deleteWebsite = async (websiteId: number): Promise<void> => {
+  const response = await axiosClient.delete<ApiResponse<void>>(`/site/delete/${websiteId}`);
+  if (!response.data.status) {
+    throw new Error(response.data.message || 'Failed to delete website.');
+  }
+};
+
+/**
+ * Suspends a website.
+ */
+export const suspendWebsite = async (websiteId: number): Promise<void> => {
+  const response = await axiosClient.delete<ApiResponse<void>>(`/site/suspend/${websiteId}`);
+  if (!response.data.status) {
+    throw new Error(response.data.message || 'Failed to suspend website.');
+  }
+};
+
+/**
+ * Reactivates a suspended website.
+ */
+export const reactivateWebsite = async (websiteId: number): Promise<void> => {
+  const response = await axiosClient.put<ApiResponse<void>>(`/site/active/${websiteId}`);
+  if (!response.data.status) {
+    throw new Error(response.data.message || 'Failed to reactivate website.');
+  }
 };

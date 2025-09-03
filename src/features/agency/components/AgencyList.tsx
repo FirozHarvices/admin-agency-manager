@@ -34,27 +34,99 @@ const getUsagePercentage = (used: number, total: number) => {
 const AgencyListSkeleton = () => (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-                <CardHeader>
-                    <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                            <Skeleton className="h-6 w-48" />
-                            <Skeleton className="h-4 w-64" />
+            <Card key={i} className="border-[#E2E8F0]">
+                <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between gap-3">
+                        {/* Left section - Agency info */}
+                        <div className="min-w-0 flex-1 space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Building2 className="w-5 h-5 text-gray-300" />
+                                <Skeleton className="h-5 w-40" />
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-1">
+                                    <Mail className="w-3 h-3 text-gray-300" />
+                                    <Skeleton className="h-3 w-32" />
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Phone className="w-3 h-3 text-gray-300" />
+                                    <Skeleton className="h-3 w-24" />
+                                </div>
+                            </div>
                         </div>
-                        <Skeleton className="w-8 h-8 rounded-full" />
+                        
+                        {/* Right section - Badge and dropdown */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <Skeleton className="h-6 w-16 rounded-full" />
+                            <Skeleton className="h-8 w-8 rounded" />
+                        </div>
                     </div>
                 </CardHeader>
+
                 <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-2 w-full" /><Skeleton className="h-3 w-20" /></div>
-                        <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-2 w-full" /><Skeleton className="h-3 w-20" /></div>
-                        <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-2 w-full" /><Skeleton className="h-3 w-20" /></div>
-                        <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-2 w-full" /><Skeleton className="h-3 w-20" /></div>
+                    {/* Avatar and Stats Section */}
+                    <div className="flex items-start gap-6">
+                        {/* Avatar */}
+                        <div className="flex-shrink-0">
+                            <Skeleton className="w-16 h-16 rounded-full" />
+                        </div>
+                        
+                        {/* Circular Stats */}
+                        <div className="flex items-center gap-6 flex-1">
+                            {[...Array(4)].map((_, statIndex) => (
+                                <div key={statIndex} className="flex flex-col items-center">
+                                    {/* Circular progress skeleton */}
+                                    <div className="relative w-14 h-14">
+                                        <div className="w-14 h-14 rounded-full border-4 border-gray-200"></div>
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <Skeleton className="h-3 w-6" />
+                                        </div>
+                                    </div>
+                                    {/* Label skeleton */}
+                                    <Skeleton className="h-3 w-12 mt-1" />
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <Separator />
-                    <div className="flex items-center justify-between">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-10 w-24" />
+
+                    {/* Action Icons Row */}
+                    <div className="flex items-center justify-end gap-2">
+                        <Skeleton className="w-8 h-8 rounded-full" />
+                        <Skeleton className="w-8 h-8 rounded-full" />
+                        <Skeleton className="w-8 h-8 rounded-full" />
+                        <Skeleton className="w-8 h-8 rounded-full" />
+                    </div>
+
+                    {/* Expanded Content Skeleton (mimics project table when expanded) */}
+                    <div className="space-y-3">
+                        <Skeleton className="h-4 w-32" />
+                        <div className="space-y-2">
+                            {/* Table header */}
+                            <div className="grid grid-cols-7 gap-2">
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                                <Skeleton className="h-3 w-full" />
+                            </div>
+                            {/* Table rows */}
+                            {[...Array(2)].map((_, rowIndex) => (
+                                <div key={rowIndex} className="grid grid-cols-7 gap-2">
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-full" />
+                                    <div className="flex gap-1">
+                                        <Skeleton className="h-6 w-6 rounded-full" />
+                                        <Skeleton className="h-6 w-6 rounded-full" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -116,7 +188,7 @@ export function AgencyList({ agencies, isLoading }: AgencyListProps) {
       setIsActionModalOpen(false);
       setSelectedAgency(null);
     } catch (error) {
-      // Error handling is done in the mutation hooks
+      // Modal stays open on error so user can retry or cancel
       console.error('Action failed:', error);
     }
   };

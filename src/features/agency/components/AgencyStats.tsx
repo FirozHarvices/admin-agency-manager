@@ -111,10 +111,11 @@ export default function AgencyStats({ stats }: AgencyStatsProps) {
   return (
     <div className="flex items-center gap-6">
       <StatCircle
-        value={stats.websites.used}
+        value={stats.websites.percentage}
         label="Website"
         color={getColor(stats.websites.percentage)}
         tooltipText={`${stats.websites.used} / ${stats.websites.total} sites`}
+        showPercentage
       />
       
       <StatCircle
@@ -134,10 +135,11 @@ export default function AgencyStats({ stats }: AgencyStatsProps) {
       />
       
       <StatCircle
-        value={stats.images.used}
+        value={stats.images.percentage}
         label="Images"
         color={getColor(stats.images.percentage)}
         tooltipText={`${stats.images.used} / ${stats.images.total} credits`}
+        showPercentage
       />
     </div>
   );

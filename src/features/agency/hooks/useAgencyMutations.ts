@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createAgency, topUpAgency, deleteAgency, suspendAgency, reactivateAgency, updateAgency, UpdateAgencyPayload, verifyOtp, VerifyOtpPayload } from '../api';
+import { createAgency, topUpAgency, deleteAgency, suspendAgency, reactivateAgency, updateAgency, UpdateAgencyPayload, verifyOtp, VerifyOtpPayload, deleteWebsite, suspendWebsite, reactivateWebsite } from '../api';
 import { CreateAgencyPayload, TopUpAgencyPayload } from '../types';
 import toast from 'react-hot-toast';
 
@@ -106,7 +106,7 @@ export const useVerifyOtp = () => {
       queryClient.invalidateQueries({ queryKey: ['agencies'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       throw error;
     },
   });
@@ -124,6 +124,55 @@ export const useUpdateAgency = () => {
     },
     onError: (error) => {
       toast.error(`${error.message || 'Error updating agency'}`);
+    },
+  });
+};
+
+// Website Management Hooks
+export const useDeleteWebsite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (websiteId: number) => deleteWebsite(websiteId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agencies'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Website deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(`${error.message || 'Error deleting website'}`);
+    },
+  });
+};
+
+export const useSuspendWebsite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (websiteId: number) => suspendWebsite(websiteId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agencies'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Website suspended successfully');
+    },
+    onError: (error) => {
+      toast.error(`${error.message || 'Error suspending website'}`);
+    },
+  });
+};
+
+export const useReactivateWebsite = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (websiteId: number) => reactivateWebsite(websiteId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agencies'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      toast.success('Website reactivated successfully');
+    },
+    onError: (error) => {
+      toast.error(`${error.message || 'Error reactivating website'}`);
     },
   });
 };

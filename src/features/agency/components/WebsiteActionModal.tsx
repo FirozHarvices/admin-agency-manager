@@ -8,51 +8,50 @@ import {
   AlertDialogTitle,
 } from '../../../components/ui/alert-dialog';
 import { Button } from '../../../components/ui/button';
-import { Agency } from '../types';
-import { Trash2, Pause, Play, AlertTriangle } from 'lucide-react';
+import { Trash2, Pause, Play, Globe } from 'lucide-react';
 
-interface AgencyActionModalProps {
+interface WebsiteActionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  agency: Agency | null;
+  website: { id: number; name: string; url: string; status?: 'active' | 'suspended' } | null;
   actionType: 'delete' | 'suspend' | 'reactivate';
   isLoading?: boolean;
 }
 
 const actionConfig = {
   delete: {
-    title: 'Delete Agency',
-    description: 'Are you sure you want to delete this agency? This action cannot be undone and will permanently remove all associated data.',
-    confirmText: 'Delete Agency',
+    title: 'Delete Website',
+    description: 'Are you sure you want to delete this website? This action cannot be undone and will permanently remove all associated data.',
+    confirmText: 'Delete Website',
     icon: Trash2,
     variant: 'destructive' as const,
   },
   suspend: {
-    title: 'Suspend Agency',
-    description: 'Are you sure you want to suspend this agency? The agency will be temporarily disabled until reactivated.',
-    confirmText: 'Suspend Agency',
+    title: 'Suspend Website',
+    description: 'Are you sure you want to suspend this website? The website will be temporarily disabled until reactivated.',
+    confirmText: 'Suspend Website',
     icon: Pause,
     variant: 'default' as const,
   },
   reactivate: {
-    title: 'Reactivate Agency',
-    description: 'Are you sure you want to reactivate this agency? The agency will be enabled again with full access.',
-    confirmText: 'Reactivate Agency',
+    title: 'Reactivate Website',
+    description: 'Are you sure you want to reactivate this website? The website will be enabled again with full access.',
+    confirmText: 'Reactivate Website',
     icon: Play,
     variant: 'default' as const,
   },
 };
 
-export function AgencyActionModal({
+export function WebsiteActionModal({
   isOpen,
   onClose,
   onConfirm,
-  agency,
+  website,
   actionType,
   isLoading = false,
-}: AgencyActionModalProps) {
-  if (!agency) return null;
+}: WebsiteActionModalProps) {
+  if (!website) return null;
 
   const config = actionConfig[actionType];
   const IconComponent = config.icon;
@@ -79,10 +78,15 @@ export function AgencyActionModal({
         
         <AlertDialogDescription className="text-left space-y-3">
           <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-            <AlertTriangle className="w-4 h-4 text-amber-500" />
-            <span className="text-sm font-medium text-gray-700">
-              {agency.name}
-            </span>
+            <Globe className="w-4 h-4 text-blue-500" />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-gray-700">
+                {website.name}
+              </span>
+              <span className="text-xs text-gray-500">
+                {website.url}
+              </span>
+            </div>
           </div>
           <p className="text-gray-600">
             {config.description}

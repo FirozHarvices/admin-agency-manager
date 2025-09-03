@@ -21,7 +21,39 @@ export interface Agency {
   total_storage: number; 
   total_image_count: number;  
   total_token_count: number;
+  customers?: Customer[];
+}
 
+// Customer interface for sites data
+export interface Customer {
+  sites: Site[];
+}
+
+// Site interface based on the provided data structure
+export interface Site {
+  id: number;
+  audience: string | null;
+  category: string;
+  created_at: string;
+  dead_line: number;
+  description: string;
+  domain: string;
+  email: string;
+  error_token: number;
+  home_page_id: number | null;
+  host: string;
+  image_used: number;
+  is_active: boolean;
+  json_object: Record<string, unknown> | null;
+  page_ids: number[] | null;
+  phone: string | null;
+  plan_start_date: string | null;
+  site_map: Record<string, unknown> | null;
+  storage_reserved: number;
+  token: string;
+  used_token: number;
+  user_id: number;
+  websiteName: string;
 }
 
 // Stats for the top-level dashboard cards
@@ -85,4 +117,16 @@ export interface ApiResponse<T> {
   status: boolean;
   data: T;
   message: string;
+}
+
+// Website/Project type for project table
+export interface Website {
+  id: number;
+  name: string;
+  url: string;
+  createdOn: string;
+  storage: string;
+  tokens: string;
+  images: string;
+  status?: 'active' | 'suspended';
 }
