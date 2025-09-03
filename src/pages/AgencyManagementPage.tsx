@@ -1,86 +1,88 @@
-import { Building2, Plus, History } from "lucide-react";
-import { useState } from "react"; // Import useState
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { Skeleton } from "../components/ui/skeleton"; 
-
-import { DashboardStats } from "../features/agency/components/DashboardStats";
-import { AgencyList } from "../features/agency/components/AgencyList";
-import { AgencyCreationForm } from "../features/agency/components/AgencyCreationForm";
-import { useGetAgencies, useGetDashboardStats } from "../features/agency/hooks/useAgencyData";
-import { TopUpHistory } from "../features/agency/components/TopupHistory";
+import { useState } from "react";
+import { Button } from "../components/ui/button";
+import { useGetAgencies } from "../features/agency/hooks/useAgencyData";
+import AgencyCard from "../features/agency/components/AgencyCard";
+import { CreateAgencyModal } from "../features/agency/components/CreateAgencyModal";
+import { TopUpHistoryModal } from "../features/agency/components/TopUpHistoryModal";
 
 export default function AgencyManagementPage() {
   const { data: agencies, isLoading: isLoadingAgencies, error: agenciesError } = useGetAgencies();
-  const { data: stats, isLoading: isLoadingStats, error: statsError } = useGetDashboardStats();
-
-  const [activeTab, setActiveTab] = useState("agencies"); 
-
-  const handleAgencyCreated = () => {
-    setActiveTab("agencies");
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-    const mainContent = document.getElementById('agency-management-main-content');
-    if (mainContent) {
-      mainContent.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const combinedError = agenciesError || statsError;
-  if (combinedError) {
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  if (agenciesError) {
     return (
-        <div className="flex items-center justify-center h-full p-6">
-            <p className="text-red-500">Error: {combinedError.message}</p>
-        </div>
+      <div className="flex items-center justify-center h-full p-6">
+        <p className="text-red-500">Error: {agenciesError.message}</p>
+      </div>
     );
   }
 
   return (
-      <div id="agency-management-main-content"  className="container p-4 mx-auto sm:p-6 overflow-auto h-full">
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold">Agency Management Portal</h1>
-          <p className="text-muted-foreground text-base">Manage agencies, billing, and resource allocation.</p>
-        </header>
+    <div className="container mx-auto p-6 max-w-6xl">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Agency Management</h1>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsHistoryModalOpen(true)}
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+          >
+            Top-Up history
+          </Button>
+          <Button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-[#5D50FE] hover:bg-[#4A3FE7] text-white rounded-full px-6"
+          >
+            Create Agency
+            <span className="ml-2 bg-white bg-opacity-20 rounded-full w-5 h-5 flex items-center justify-center text-xs">
+              +
+            </span>
+          </Button>
+        </div>
+      </div>
 
-        {isLoadingStats ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
+      {/* Agency Cards */}
+      <div className="space-y-6">
+        {isLoadingAgencies ? (
+          <div className="space-y-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-100 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        ) : !agencies || agencies.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <span className="text-2xl text-gray-400">🏢</span>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Agencies Found</h3>
+            <p className="text-gray-500 mb-4">Get started by creating your first agency.</p>
+            <Button 
+              className="bg-[#5D50FE] hover:bg-[#4A3FE7] text-white"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              Create Agency
+            </Button>
           </div>
         ) : (
-          stats && <DashboardStats stats={stats} />
+          agencies.map((agency) => (
+            <AgencyCard key={agency.id} agency={agency} />
+          ))
         )}
-
-      {/* Main Content */}
-      <Tabs defaultValue="agencies" value={activeTab} onValueChange={setActiveTab} className="mt-8 space-y-6"> {/* Control the tab */}
-        <TabsList className="grid w-full grid-cols-3 bg-white border border-[#E2E8F0]">
-          <TabsTrigger value="agencies" className="data-[state=active]:bg-[#5D50FE] data-[state=active]:text-white">
-            <Building2 className="w-4 h-4 mr-2" />
-            Agency Management
-          </TabsTrigger>
-          <TabsTrigger value="create" className="data-[state=active]:bg-[#5D50FE] data-[state=active]:text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Agency
-          </TabsTrigger>
-          <TabsTrigger value="history" className="data-[state=active]:bg-[#5D50FE] data-[state=active]:text-white">
-            <History className="w-4 h-4 mr-2" />
-            Top-Up History
-          </TabsTrigger>
-        </TabsList>
-
-          <TabsContent value="agencies" className="space-y-6">
-             <AgencyList agencies={agencies || []} isLoading={isLoadingAgencies} />
-          </TabsContent>
-
-          <TabsContent value="create" className="space-y-6">
-            <AgencyCreationForm onAgencyCreated={handleAgencyCreated} /> 
-          </TabsContent>
-
-          <TabsContent value="history" className="space-y-6">
-            <TopUpHistory agencies={agencies || []} isLoading={isLoadingAgencies} />
-          </TabsContent>
-        </Tabs>
       </div>
+
+      {/* Modals */}
+      <CreateAgencyModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
+      
+      <TopUpHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        agencies={agencies || []}
+        isLoadingAgencies={isLoadingAgencies}
+      />
+    </div>
   );
 }

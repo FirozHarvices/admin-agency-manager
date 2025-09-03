@@ -8,7 +8,6 @@ import { useSelector } from "react-redux"
 import { selectCurrentUser } from "../../../store/slices/authSlice"
 
 // UI Components
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/Card"
 import { Button } from "../../../components/ui/button"
 import { Input } from "../../../components/ui/input"
 import { Label } from "../../../components/ui/label"
@@ -87,19 +86,8 @@ export function AgencyCreationForm({ onAgencyCreated }: AgencyCreationFormProps)
   }
 
   return (
-    <Card className="max-w-4xl mx-auto border-[#E2E8F0]">
-      <CardHeader className="bg-[#F3F2FF] border-b border-[#E2E8F0]">
-        <CardTitle className="flex items-center gap-2 text-[#1A202C]">
-          <Building2 className="w-5 h-5 text-[#5D50FE]" />
-          Create New Agency
-        </CardTitle>
-        <CardDescription className="text-[#718096]">
-          Set up a new agency with custom resource limits and billing configuration.
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-8">
+    <div className="max-w-4xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Information */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
@@ -337,7 +325,6 @@ export function AgencyCreationForm({ onAgencyCreated }: AgencyCreationFormProps)
             </Button>
           </div>
         </form>
-      </CardContent>
-    </Card>
+    </div>
   )
 }

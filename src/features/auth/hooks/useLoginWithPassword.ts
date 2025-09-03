@@ -25,7 +25,7 @@ export const useLoginWithPassword = () => {
 
         toast.success("Login successful!");
         queueMicrotask(() => {
-      navigate("/user-master", { replace: true });
+      navigate("/", { replace: true });
     });
 
       } else {
