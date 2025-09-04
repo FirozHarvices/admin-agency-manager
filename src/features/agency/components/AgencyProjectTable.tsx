@@ -52,17 +52,23 @@ export default function AgencyProjectTable({ agency }: AgencyProjectTableProps) 
     return tokens.toString();
   };
 
-  // Get actual projects from agency data
-  const projects: Website[] = agency.customers?.[0]?.sites ? agency.customers[0].sites.map((site) => ({
-    id: site.id,
-    name: site.websiteName || site.domain || 'Unnamed Website',
-    createdOn: formatDate(site.created_at),
-    url: site.host || `${site.domain}.magicpagez.com`,
-    storage: formatStorage(site.storage_reserved),
-    tokens: formatTokens(site.used_token),
-    images: `${site.image_used || 0} Credits`,
-    status: site.is_active ? 'active' as const : 'suspended' as const,
-  })) : [];
+  // Get actual projects from agency data - iterate through all customers
+  const projects: Website[] = agency.customers?.reduce((allSites: Website[], customer) => {
+    if (customer.sites && customer.sites.length > 0) {
+      const customerSites = customer.sites.map((site) => ({
+        id: site.id,
+        name: site.websiteName || site.domain || 'Unnamed Website',
+        createdOn: formatDate(site.created_at),
+        url: site.host || `${site.domain}.magicpagez.com`,
+        storage: formatStorage(site.storage_reserved),
+        tokens: formatTokens(site.used_token),
+        images: `${site.image_used || 0} Credits`,
+        status: site.is_active ? 'active' as const : 'suspended' as const,
+      }));
+      return [...allSites, ...customerSites];
+    }
+    return allSites;
+  }, []) || [];
 
   const handleAction = (website: Website, actionType: 'delete' | 'suspend' | 'reactivate') => {
     setActionModal({
