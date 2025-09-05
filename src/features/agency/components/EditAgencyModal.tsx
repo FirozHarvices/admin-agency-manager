@@ -20,6 +20,7 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [originalEmail, setOriginalEmail] = useState('');
+  const [originalPhone, setOriginalPhone] = useState('');
   const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
   const [currentStep, setCurrentStep] = useState<FlowStep>('edit');
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes
@@ -28,16 +29,20 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
   const updateMutation = useUpdateAgency();
   const verifyOtpMutation = useVerifyOtp();
 
-  useEffect(() => {
-    if (isOpen && agency) {
-      setEmail(agency.email || '');
-      setPhone(agency.phone || '');
-      setOriginalEmail(agency.email || '');
+useEffect(() => {
+  if (isOpen && agency) {
+    setEmail(agency.email || '');
+    setPhone(agency.phone || '');
+    setOriginalEmail(agency.email || '');
+    setOriginalPhone(agency.phone || '');
+    setVerificationCode(['', '', '', '', '', '']);
+    setVerificationError('');
+
+    if (currentStep === 'edit') { 
       setCurrentStep('edit');
-      setVerificationCode(['', '', '', '', '', '']);
-      setVerificationError('');
     }
-  }, [isOpen, agency]);
+  }
+}, [isOpen]); 
 
   useEffect(() => {
     if (currentStep === 'verify-code' && timeLeft > 0) {
@@ -55,24 +60,28 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
   const handleSubmit = () => {
     if (!agency) return;
     
-    const emailChanged = email !== originalEmail;
+    
+    // Validate that at least email or phone is provided (not both empty)
+    if (!email.trim() && !phone.trim()) {
+      toast.error('Please provide at least an email or phone number');
+      return;
+    }
     
     updateMutation.mutate(
-      { id: agency.id, email, phone },
+      { id: agency.id, email: email.trim(), phone: phone.trim() },
       {
-        onSuccess: () => {
-          if (emailChanged) {
-            // Email changed, show verification step
-            setCurrentStep('verify-code');
-            setTimeLeft(120); // Reset timer
-            toast.success('Verification code sent to your new email address');
-          } else {
-            // Only phone changed, close modal
-            onClose();
-          }
-        },
+      onSuccess: (data, variables) => {
+
+  if (variables.email !== originalEmail) {
+    setCurrentStep('verify-code');
+    setVerificationError('');
+  } else {
+    handleClose(); // only if no email change
+  }
+},
         onError: (error) => {
           console.error('Update failed:', error);
+          toast.error('Failed to update agency');
         }
       }
     );
@@ -94,7 +103,7 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
       {
         onSuccess: () => {
           setCurrentStep('success');
-          toast.success('Email verified successfully!');
+          // Don't show toast here, will show in success step
         },
         onError: (error) => {
           setVerificationError(error.message || 'Invalid verification code');
@@ -102,6 +111,12 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
       }
     );
   };
+
+  const isValidEmail = (email: string) => {
+  if (!email.trim()) return true; // allow empty, only validate if user types something
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+};
 
   const handleCodeChange = (index: number, value: string) => {
     if (value.length <= 1 && /^\d*$/.test(value)) {
@@ -136,7 +151,7 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
     
     // Resend by calling the update API again
     updateMutation.mutate(
-      { id: agency.id, email, phone },
+      { id: agency.id, email: email.trim(), phone: phone.trim() },
       {
         onSuccess: () => {
           toast.success('New verification code sent to your email');
@@ -152,7 +167,16 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
     onClose();
   };
 
+  const handleSuccessClose = () => {
+    toast.success('Agency updated successfully');
+    handleClose();
+  };
+
   if (!agency) return null;
+
+  const emailChanged = email !== originalEmail;
+  const phoneChanged = phone !== originalPhone;
+  const hasChanges = emailChanged || phoneChanged;
 
   const renderEditForm = () => (
     <>
@@ -169,7 +193,11 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
               className="pl-9 border-[#E2E8F0] focus:border-[#5D50FE]"
             />
           </div>
-          {email !== originalEmail && (
+          {email && !isValidEmail(email) && (
+  <p className="text-sm text-red-600 mt-1">Please enter a valid email address</p>
+)}
+
+          {emailChanged && (
             <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-2 rounded-lg">
               <Shield className="w-4 h-4" />
               Email verification will be required after saving
@@ -202,11 +230,15 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
         </Button>
         <Button 
           onClick={handleSubmit} 
-          disabled={updateMutation.isPending || (!email && !phone)} 
-          className="bg-[#5D50FE] text-white hover:bg-[#4A3FE7] disabled:bg-opacity-50"
+   disabled={
+    updateMutation.isPending || 
+    !hasChanges || 
+    !email.trim() ||          
+    !isValidEmail(email)  
+  }           className="bg-[#5D50FE] text-white hover:bg-[#4A3FE7] disabled:bg-opacity-50"
         >
           <Save className="w-4 h-4 mr-2" />
-          {updateMutation.isPending ? 'Saving...' : 'Save & Verify'}
+          {updateMutation.isPending ? 'Saving...' : emailChanged ? 'Save & Verify' : 'Save Changes'}
         </Button>
       </div>
     </>
@@ -221,8 +253,8 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
           </div>
           <h3 className="font-semibold text-[#1A202C] mb-2">Verify Your New Email</h3>
           <p className="text-sm text-[#718096]">
-            We've sent a 6-digit code to <br />
-            <span className="font-medium text-[#1A202C]">{email}</span>
+            We've sent a 6-digit code to your current email <br />
+            <span className="font-medium text-[#1A202C]">{originalEmail}</span>
           </p>
         </div>
 
@@ -308,7 +340,7 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
 
       <div className="flex justify-center pt-4 border-t border-[#E2E8F0]">
         <Button 
-          onClick={handleClose}
+          onClick={handleSuccessClose}
           className="bg-[#5D50FE] text-white hover:bg-[#4A3FE7]"
         >
           Continue
@@ -318,7 +350,9 @@ export function EditAgencyModal({ isOpen, onClose, agency }: EditAgencyModalProp
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+  if (!open) handleClose(); 
+}}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-[#1A202C]">
