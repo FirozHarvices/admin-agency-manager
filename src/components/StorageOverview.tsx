@@ -22,6 +22,8 @@ export function StorageOverview({
   actualUsedPercent,
 }: StorageOverviewProps) {
   const circleColor = "#FF8A00";
+  const formatGB = (gb: number) => gb.toFixed(1);
+  const formatPct = (pct: number) => pct.toFixed(1);
 
   return (
     <div className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 sm:px-6 sm:py-4 shadow-sm">
@@ -33,7 +35,7 @@ export function StorageOverview({
           </div>
           <div>
             <div className="text-base sm:text-lg font-semibold text-gray-900 leading-tight">
-              {workerNodeStorageGB.toString().padStart(2, "0")} GB
+              {formatGB(workerNodeStorageGB)} GB
             </div>
             <div className="text-xs sm:text-sm text-gray-500">Worker Node Storage</div>
           </div>
@@ -48,13 +50,13 @@ export function StorageOverview({
             value={agencyAllottedPercent}
             label=""
             color={circleColor}
-            tooltipText={`${agencyAllottedPercent}% of allotted storage`}
+            tooltipText={`${formatPct(agencyAllottedPercent)}% of allotted storage`}
             showPercentage
           />
           <div className="leading-tight">
             <div className="text-base sm:text-lg font-semibold text-gray-900">
-              {agencyAllottedGB.toString().padStart(2, "0")} GB
-              <span className="ml-2 text-xs sm:text-sm text-gray-400">/{agencyAllottedPercent}%</span>
+              {formatGB(agencyAllottedGB)} GB
+              <span className="ml-2 text-xs sm:text-sm text-gray-400">/{formatPct(agencyAllottedPercent)}%</span>
             </div>
             <div className="text-xs sm:text-sm text-gray-500">Agency Allotted Storage</div>
           </div>
@@ -69,13 +71,13 @@ export function StorageOverview({
             value={actualUsedPercent}
             label=""
             color={circleColor}
-            tooltipText={`${actualUsedPercent}% used of total`}
+            tooltipText={`${formatPct(actualUsedPercent)}% used of total`}
             showPercentage
           />
           <div className="leading-tight">
             <div className="text-base sm:text-lg font-semibold text-gray-900">
-              {actualUsedGB.toString().padStart(2, "0")} GB
-              <span className="ml-2 text-xs sm:text-sm text-gray-400">/{actualUsedPercent}%</span>
+              {formatGB(actualUsedGB)} GB
+              <span className="ml-2 text-xs sm:text-sm text-gray-400">/{formatPct(actualUsedPercent)}%</span>
             </div>
             <div className="text-xs sm:text-sm text-gray-500">Actual Used Storage</div>
           </div>
