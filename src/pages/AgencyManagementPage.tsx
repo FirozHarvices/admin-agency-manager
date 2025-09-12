@@ -18,7 +18,6 @@ export default function AgencyManagementPage() {
     error: systemDataError,
   } = useSystemData();
 
-  console.log('System Data:', systemData);
 
   if (agenciesError) {
     return (
