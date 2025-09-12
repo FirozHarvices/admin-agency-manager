@@ -1,17 +1,24 @@
-import { useState } from "react";
-import { Button } from "../components/ui/button";
-import { useGetAgencies } from "../features/agency/hooks/useAgencyData";
-import AgencyCard from "../features/agency/components/AgencyCard";
-import AgencyCardSkeleton from "../features/agency/components/AgencyCardSkeleton";
-import { CreateAgencyModal } from "../features/agency/components/CreateAgencyModal";
-import { TopUpHistoryModal } from "../features/agency/components/TopUpHistoryModal";
-import StorageOverview from "../components/StorageOverview";
+import { useState } from 'react';
+import { Button } from '../components/ui/button';
+import { useGetAgencies } from '../features/agency/hooks/useAgencyData';
+import AgencyCard from '../features/agency/components/AgencyCard';
+import AgencyCardSkeleton from '../features/agency/components/AgencyCardSkeleton';
+import { CreateAgencyModal } from '../features/agency/components/CreateAgencyModal';
+import { TopUpHistoryModal } from '../features/agency/components/TopUpHistoryModal';
+import StorageOverview from '../components/StorageOverview';
+import { useSystemData } from '../features/agency/hooks/useSystemData';
 
 export default function AgencyManagementPage() {
   const { data: agencies, isLoading: isLoadingAgencies, error: agenciesError } = useGetAgencies();
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const {
+    data: systemData,
+    isLoading: isLoadingSystemData,
+    error: systemDataError,
+  } = useSystemData();
 
+  console.log('System Data:', systemData);
 
   if (agenciesError) {
     return (
@@ -23,28 +30,38 @@ export default function AgencyManagementPage() {
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
-         {/* Storage overview panel */}
+      {/* Storage overview panel */}
       <div className="mb-6">
-        <StorageOverview
-          workerNodeStorageGB={10}
-          agencyAllottedGB={7}
-          agencyAllottedPercent={70}
-          actualUsedGB={5}
-          actualUsedPercent={50}
-        />
+        {isLoadingSystemData ? (
+          <div className="bg-gray-100 animate-pulse h-36 rounded-lg"></div>
+        ) : systemDataError ? (
+          <div className="bg-white border border-red-100 rounded-2xl p-4">
+            <p className="text-red-500">Error loading storage data</p>
+          </div>
+        ) : (
+          systemData && (
+            <StorageOverview
+              workerNodeStorageGB={systemData.workerNodeStorageGB}
+              agencyAllottedGB={systemData.agencyAllottedGB}
+              agencyAllottedPercent={systemData.agencyAllottedPercent}
+              actualUsedGB={systemData.actualUsedGB}
+              actualUsedPercent={systemData.actualUsedPercent}
+            />
+          )
+        )}
       </div>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Agency Management</h1>
         <div className="flex gap-3">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setIsHistoryModalOpen(true)}
             className="border-gray-300 text-gray-700 hover:bg-gray-50"
           >
             Top-Up history
           </Button>
-          <Button 
+          <Button
             onClick={() => setIsCreateModalOpen(true)}
             className="bg-[#5D50FE] hover:bg-[#4A3FE7] text-white rounded-full px-6"
           >
@@ -71,7 +88,7 @@ export default function AgencyManagementPage() {
             </div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">No Agencies Found</h3>
             <p className="text-gray-500 mb-4">Get started by creating your first agency.</p>
-            <Button 
+            <Button
               className="bg-[#5D50FE] hover:bg-[#4A3FE7] text-white"
               onClick={() => setIsCreateModalOpen(true)}
             >
@@ -79,18 +96,13 @@ export default function AgencyManagementPage() {
             </Button>
           </div>
         ) : (
-          agencies.map((agency) => (
-            <AgencyCard key={agency.id} agency={agency} />
-          ))
+          agencies.map((agency) => <AgencyCard key={agency.id} agency={agency} />)
         )}
       </div>
 
       {/* Modals */}
-      <CreateAgencyModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
-      
+      <CreateAgencyModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
+
       <TopUpHistoryModal
         isOpen={isHistoryModalOpen}
         onClose={() => setIsHistoryModalOpen(false)}

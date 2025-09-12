@@ -1,5 +1,5 @@
 import axiosClient from "../../../api/axiosClient";
-import { Agency, CreateAgencyPayload, TopUpAgencyPayload, DashboardStats, TopUpHistoryItem, ApiResponse } from "../types";
+import { Agency, CreateAgencyPayload, TopUpAgencyPayload, DashboardStats, TopUpHistoryItem, ApiResponse, SystemData } from "../types";
 
 // NOTE: I've invented endpoint URLs based on common REST patterns.
 // Replace '/agencies', '/agencies/stats', etc., with your actual API routes.
@@ -182,4 +182,37 @@ export const reactivateWebsite = async (websiteId: number): Promise<void> => {
   if (!response.data.status) {
     throw new Error(response.data.message || 'Failed to reactivate website.');
   }
+};
+
+
+
+export const getSystemData = async (): Promise<SystemData> => {
+  const response = await axiosClient.get<ApiResponse<{
+    allocated_storage: number;
+    total_storage: number;
+    used_storage: number;
+  }>>('/user/system-data');
+  
+  if (!response.data || !response.data.status) {
+    throw new Error(response.data?.message || 'Failed to fetch system data.');
+  }
+  
+  const rawData = response.data.data;
+  
+  // Convert storage values to GB (assuming values are in MB)
+  const totalStorageGB = rawData.total_storage / 1000;
+  const allocatedStorageGB = rawData.allocated_storage / 1000;
+  const usedStorageGB = rawData.used_storage / 1000;
+  
+  // Calculate percentages
+  const allocatedPercent = (allocatedStorageGB / totalStorageGB) * 100;
+  const usedPercent = (usedStorageGB / totalStorageGB) * 100;
+  
+  return {
+    workerNodeStorageGB: totalStorageGB,
+    agencyAllottedGB: allocatedStorageGB,
+    agencyAllottedPercent: parseFloat(allocatedPercent.toFixed(1)),
+    actualUsedGB: usedStorageGB,
+    actualUsedPercent: parseFloat(usedPercent.toFixed(1))
+  };
 };
