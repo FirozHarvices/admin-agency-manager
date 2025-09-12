@@ -130,3 +130,11 @@ export interface Website {
   images: string;
   status?: 'active' | 'suspended';
 }
+
+export interface SystemData {
+  workerNodeStorageGB: number;
+  agencyAllottedGB: number;
+  agencyAllottedPercent: number;
+  actualUsedGB: number;
+  actualUsedPercent: number;
+}
