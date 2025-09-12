@@ -22,6 +22,17 @@ import {
   SelectValue,
 } from "../../../components/ui/Select" // Added Select imports
 import { Building2, Mail, Phone, Database, Cpu, Globe, ImageIcon, DollarSign } from "lucide-react"
+import { useSystemData } from "../hooks/useSystemData"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../components/ui/alert-dialog"
 
 // Initial state for the form, matching the desired payload structure.
 const initialFormData = {
@@ -53,6 +64,9 @@ export function AgencyCreationForm({ onAgencyCreated }: AgencyCreationFormProps)
   const [formData, setFormData] = useState(initialFormData)
   const createAgencyMutation = useCreateAgency()
   const currentUser = useSelector(selectCurrentUser)
+  const { data: systemData } = useSystemData()
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [pendingPayload, setPendingPayload] = useState<CreateAgencyPayload | null>(null)
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -71,6 +85,20 @@ export function AgencyCreationForm({ onAgencyCreated }: AgencyCreationFormProps)
       ...formData,
       user_role: "Agency",
       parent_user_id: currentUser.id,
+    }
+
+    // Compute available storage capacity in MB from system data
+    const availableMB = systemData
+      ? Math.max(
+          (systemData.workerNodeStorageGB - systemData.agencyAllottedGB) * 1000,
+          0
+        )
+      : undefined
+
+    if (availableMB !== undefined && payload.storage > availableMB) {
+      setPendingPayload(payload)
+      setConfirmOpen(true)
+      return
     }
 
     createAgencyMutation.mutate(payload, {
@@ -325,6 +353,52 @@ export function AgencyCreationForm({ onAgencyCreated }: AgencyCreationFormProps)
             </Button>
           </div>
         </form>
+        {/* Confirmation dialog when requested storage exceeds available */}
+        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Requested storage exceeds available capacity</AlertDialogTitle>
+              <AlertDialogDescription>
+                {(() => {
+                  const availableGB = systemData
+                    ? Math.max(
+                        systemData.workerNodeStorageGB - systemData.agencyAllottedGB,
+                        0
+                      )
+                    : 0
+                  return (
+                    <div>
+                      <p>
+                        You're trying to allocate {(formData.storage / 1000).toFixed(1)} GB for this agency, but only {availableGB.toFixed(1)} GB is currently available.
+                      </p>
+                      <p className="mt-2">Do you want to proceed anyway?</p>
+                    </div>
+                  )
+                })()}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setConfirmOpen(false)
+                setPendingPayload(null)
+              }}>Go back</AlertDialogCancel>
+              <AlertDialogAction onClick={() => {
+                if (pendingPayload) {
+                  createAgencyMutation.mutate(pendingPayload, {
+                    onSuccess: () => {
+                      setConfirmOpen(false)
+                      setPendingPayload(null)
+                      setFormData(initialFormData)
+                      onAgencyCreated()
+                    },
+                  })
+                } else {
+                  setConfirmOpen(false)
+                }
+              }}>Proceed anyway</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </div>
   )
 }

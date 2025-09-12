@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { type Agency, type TopUpAgencyPayload } from "../types"; // Make sure types are correctly imported
 import { useTopUpAgency } from "../hooks/useAgencyMutations"; // The mutation hook for the API call
+import { useSystemData } from "../hooks/useSystemData";
 
 // UI Components
 import {
@@ -35,6 +36,16 @@ import { Separator } from "../../../components/ui/separator";
 import { Badge } from "../../../components/ui/badge";
 import { currencyOptions } from "../../UserMaster/data/dummy-data";
 import toast from "react-hot-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../components/ui/alert-dialog";
 
 // --- Props Interface ---
 interface TopUpModalProps {
@@ -72,6 +83,9 @@ const presetOptions = {
 export function TopUpModal({ isOpen, onClose, agency }: TopUpModalProps) {
   const [formState, setFormState] = useState<TopUpFormState>(initialFormState);
   const topUpMutation = useTopUpAgency();
+  const { data: systemData } = useSystemData();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState<TopUpAgencyPayload | null>(null);
 
   // Reset the form whenever the modal is opened
   useEffect(() => {
@@ -114,6 +128,21 @@ export function TopUpModal({ isOpen, onClose, agency }: TopUpModalProps) {
       amount: formState.amount,
       currency: formState.currency,
     };
+
+    // Compute available capacity in MB if system data exists
+    const availableMB = systemData
+      ? Math.max(
+          (systemData.workerNodeStorageGB - systemData.agencyAllottedGB) * 1000,
+          0
+        )
+      : undefined;
+
+    // If requesting more than available, ask for confirmation
+    if (availableMB !== undefined && payload.storage > availableMB) {
+      setPendingPayload(payload);
+      setConfirmOpen(true);
+      return;
+    }
 
     // 3. Execute the Mutation
     topUpMutation.mutate(payload, {
@@ -459,6 +488,51 @@ export function TopUpModal({ isOpen, onClose, agency }: TopUpModalProps) {
             {topUpMutation.isPending ? "Applying..." : "Apply Top-Up"}
           </Button>
         </div>
+        {/* Confirmation dialog when requested storage exceeds available */}
+        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Requested storage exceeds available capacity</AlertDialogTitle>
+              <AlertDialogDescription>
+                {(() => {
+                  const availableGB = systemData
+                    ? Math.max(
+                        systemData.workerNodeStorageGB - systemData.agencyAllottedGB,
+                        0
+                      )
+                    : 0;
+                  return (
+                    <div>
+                      <p>
+                        You're trying to add {(formState.storage / 1000).toFixed(1)} GB, but only {availableGB.toFixed(1)} GB is currently available.
+                      </p>
+                      <p className="mt-2">Do you want to proceed anyway?</p>
+                    </div>
+                  );
+                })()}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setConfirmOpen(false);
+                setPendingPayload(null);
+              }}>Go back</AlertDialogCancel>
+              <AlertDialogAction onClick={() => {
+                if (pendingPayload) {
+                  topUpMutation.mutate(pendingPayload, {
+                    onSuccess: () => {
+                      setConfirmOpen(false);
+                      setPendingPayload(null);
+                      onClose();
+                    },
+                  });
+                } else {
+                  setConfirmOpen(false);
+                }
+              }}>Proceed anyway</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
