@@ -25,18 +25,21 @@ export function ChatPanel({ ticketId, ticketStatus }: ChatPanelProps) {
 
   const isClosed = ticketStatus === 'CLOSED';
 
-  // Join room + mark read on mount, leave room on unmount
-  useEffect(() => {
+  const emitMarkRead = () => {
     if (!socket || !adminUser) return;
-
-    socket.emit('join_ticket', { ticket_id: ticketId });
-
-    // Mark messages as read
     socket.emit('mark_read', {
       ticket_id: ticketId,
       reader_id: Number(adminUser.id),
       token: localStorage.getItem('token') ?? '',
     });
+  };
+
+  // Join room + mark read on mount, leave room on unmount
+  useEffect(() => {
+    if (!socket || !adminUser) return;
+
+    socket.emit('join_ticket', { ticket_id: ticketId });
+    emitMarkRead();
 
     // Clear unread count in ticket list cache
     queryClient.setQueryData<Ticket[]>(TICKET_KEYS.all, (old) => {
@@ -46,8 +49,19 @@ export function ChatPanel({ ticketId, ticketStatus }: ChatPanelProps) {
       );
     });
 
+    // Mark read on every incoming message while chat is open
+    const handleIncoming = (message: { ticket_id: number }) => {
+      if (message.ticket_id === ticketId) {
+        emitMarkRead();
+      }
+    };
+    socket.on('receive_message', handleIncoming);
+
     return () => {
+      socket.off('receive_message', handleIncoming);
       socket.emit('leave_ticket', { ticket_id: ticketId });
+      // Refetch ticket list so counts are fresh when returning
+      queryClient.invalidateQueries({ queryKey: TICKET_KEYS.all });
     };
   }, [socket, ticketId, adminUser, queryClient]);
 

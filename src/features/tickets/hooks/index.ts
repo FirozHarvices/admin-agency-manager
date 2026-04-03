@@ -15,7 +15,7 @@ export function useTickets() {
       const response = await ticketApi.getAll();
       return response.data.data;
     },
-    staleTime: 30 * 1000,
+    staleTime: 10 * 1000,
   });
 }
 
