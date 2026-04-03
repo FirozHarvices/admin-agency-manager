@@ -1,8 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Sparkles, Ticket } from 'lucide-react';
+import { useTickets } from '@/features/tickets/hooks';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/tickets', label: 'Support Tickets', icon: Ticket },
   // { to: '/billing-plan', label: 'Billing Plan', icon: CreditCard },
   // { to: '/user-master', label: 'User Master', icon: Users },
 ];
@@ -13,9 +15,12 @@ const navItems = [
 // ];
 
 export function Sidebar() {
+  const { data: tickets } = useTickets();
+  const totalUnread = tickets?.reduce((sum, t) => sum + (t.unread_count || 0), 0) ?? 0;
+
   return (
     <aside className="w-64 flex-shrink-0 bg-white rounded-2xl shadow-sm flex flex-col">
-      
+
       {/* Sidebar Header */}
       <div className="h-20 flex items-center px-6">
         <Sparkles className="h-6 w-6 text-brand-primary mr-2" />
@@ -38,6 +43,9 @@ export function Sidebar() {
             >
               <item.icon className="h-5 w-5 mr-3" />
               {item.label}
+              {item.to === '/tickets' && totalUnread > 0 && (
+                <span className="ml-auto w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              )}
             </NavLink>
           ))}
         </nav>
@@ -60,7 +68,7 @@ export function Sidebar() {
           ))}
         </nav> */}
       </div>
-      
+
       <div className="mt-auto p-4 px-12">
         {/* <Button className="w-full bg-[#5D50FE]">
           <Crown color='#FFB31F' className="w-4 h-4 mr-2" />

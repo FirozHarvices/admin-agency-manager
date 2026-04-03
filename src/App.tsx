@@ -7,6 +7,8 @@ import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
 import { Toaster } from "react-hot-toast";
 import AgencyManagementPage from "./pages/AgencyManagementPage";
+import { TicketListPage } from './features/tickets/pages/TicketListPage';
+import { TicketDetailPage } from './features/tickets/pages/TicketDetailPage';
 
 function App() {
   return (
@@ -34,6 +36,8 @@ function App() {
           >
             {/* Nested Routes inside Protected Layout */}
             <Route index element={<AgencyManagementPage  />} />
+            <Route path="/tickets" element={<TicketListPage />} />
+            <Route path="/tickets/:id" element={<TicketDetailPage />} />
             {/* <Route path="billing-plan" element={<div>billing plan</div>} />
             <Route path="user-master" element={
                <AgencyManagementPage  />
