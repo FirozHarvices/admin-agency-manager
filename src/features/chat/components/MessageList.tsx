@@ -7,7 +7,7 @@ interface MessageListProps {
 }
 
 function formatDateLabel(dateStr: string) {
-  const date = new Date(dateStr);
+  const date = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);

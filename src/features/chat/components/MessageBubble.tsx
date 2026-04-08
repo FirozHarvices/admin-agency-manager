@@ -8,7 +8,10 @@ interface MessageBubbleProps {
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isAdmin = message.sender_type === 'ADMIN';
 
-  const time = new Date(message.created_at).toLocaleTimeString('en-GB', {
+  const createdAt = message.created_at.endsWith('Z')
+    ? message.created_at
+    : message.created_at + 'Z';
+  const time = new Date(createdAt).toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
   });

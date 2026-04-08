@@ -36,6 +36,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     });
 
     s.on('increase_count', (data: { sender_id: number; unread_chats_count: Record<string, number> }) => {
+      // Ignore unread bumps caused by the admin's own messages
+      if (data.sender_id === Number(user.id)) return;
+
       queryClient.setQueryData<Ticket[]>(TICKET_KEYS.all, (old) => {
         if (!old) return old;
         return old.map((t) => {

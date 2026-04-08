@@ -44,6 +44,7 @@ export function TicketDetailPage() {
     }
   }, [ticket]);
 
+  const isClosed = ticket?.ticket_status === 'CLOSED';
   const hasChanges =
     ticket &&
     (selectedStatus !== ticket.ticket_status || selectedPriority !== ticket.priority);
@@ -177,7 +178,7 @@ export function TicketDetailPage() {
                   year: 'numeric',
                 })}
               </span>
-              <span className="text-brand-primary font-medium">Agency #{ticket.agency_id}</span>
+              <span className="text-brand-primary font-medium">{ticket.agency?.name ?? `Agency #${ticket.agency_id}`}</span>
             </div>
           </div>
 
@@ -249,12 +250,15 @@ export function TicketDetailPage() {
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-brand-text-secondary" />
               <span className="text-sm font-semibold text-brand-text-primary">
-                Agency #{ticket.agency_id}
+                {ticket.agency?.name ?? `Agency #${ticket.agency_id}`}
               </span>
             </div>
-            <p className="text-xs text-brand-text-secondary mt-1">
-              Managed by: {ticket.managed_by ?? 'Unassigned'}
-            </p>
+            {ticket.agency?.email && (
+              <p className="text-xs text-brand-text-secondary mt-1">{ticket.agency.email}</p>
+            )}
+            {ticket.agency?.phone && (
+              <p className="text-xs text-brand-text-secondary mt-0.5">{ticket.agency.phone}</p>
+            )}
           </div>
 
           {/* Panel 2 — Update Status & Severity */}
@@ -269,7 +273,7 @@ export function TicketDetailPage() {
                 <Select
                   value={selectedStatus}
                   onValueChange={(val) => setSelectedStatus(val as TicketStatus)}
-                  disabled={updateTicketMutation.isPending}
+                  disabled={isClosed || updateTicketMutation.isPending}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -289,7 +293,7 @@ export function TicketDetailPage() {
                 <Select
                   value={selectedPriority}
                   onValueChange={(val) => setSelectedPriority(val as TicketPriority)}
-                  disabled={updateTicketMutation.isPending}
+                  disabled={isClosed || updateTicketMutation.isPending}
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -306,7 +310,7 @@ export function TicketDetailPage() {
 
               <button
                 onClick={handleUpdate}
-                disabled={!hasChanges || updateTicketMutation.isPending}
+                disabled={isClosed || !hasChanges || updateTicketMutation.isPending}
                 className="w-full py-2 px-3 rounded-lg bg-brand-primary text-white text-sm font-semibold hover:bg-brand-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {updateTicketMutation.isPending ? 'Updating...' : 'Update'}

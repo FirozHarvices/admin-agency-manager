@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket as TicketIcon, Search } from 'lucide-react';
+import { Ticket as TicketIcon, Search, Star, Phone, Mail } from 'lucide-react';
 import { useTickets } from '../hooks';
 import { TicketStatusBadge } from '../components/TicketStatusBadge';
 import {
@@ -61,7 +61,16 @@ export function TicketListPage() {
     return tickets.filter((t) => {
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        if (!t.id.toString().includes(q) && !t.subject.toLowerCase().includes(q)) return false;
+        const fields = [
+          t.ticket_code,
+          t.subject,
+          t.agency?.name,
+          t.agency?.email,
+          t.agency?.phone,
+          TICKET_CATEGORY_CONFIG[t.category]?.label,
+          TICKET_PRIORITY_CONFIG[t.priority]?.label,
+        ];
+        if (!fields.some((f) => f?.toLowerCase().includes(q))) return false;
       }
       if (statusFilter !== 'ALL' && t.ticket_status !== statusFilter) return false;
       if (categoryFilter !== 'ALL' && t.category !== categoryFilter) return false;
@@ -128,7 +137,7 @@ export function TicketListPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by ID or subject..."
+            placeholder="Search tickets..."
             className="pl-9 pr-3 w-auto"
           />
         </div>
@@ -256,11 +265,44 @@ export function TicketListPage() {
                     {ticket.subject}
                   </p>
 
-                  {/* Row 3: Agency */}
-                  <div className="mt-2">
+                  {/* Row 3: Rating */}
+                  {ticket.rating != null && (
+                    <div className="mt-2 flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`h-3.5 w-3.5 ${
+                            star <= ticket.rating!
+                              ? 'fill-amber-400 text-amber-400'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="text-xs text-brand-text-secondary ml-1">
+                        {ticket.rating}/5
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Row 4: Agency info */}
+                  <div className="mt-2 space-y-1">
                     <span className="text-xs font-medium text-brand-primary bg-brand-primary-light px-2 py-0.5 rounded-full">
-                      Agency #{ticket.agency_id}
+                      {ticket.agency?.name ?? `Agency #${ticket.agency_id}`}
                     </span>
+                    <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                      {ticket.agency?.phone && (
+                        <span className="flex items-center gap-1 text-[11px] text-brand-text-secondary">
+                          <Phone className="h-3 w-3" />
+                          {ticket.agency.phone}
+                        </span>
+                      )}
+                      {ticket.agency?.email && (
+                        <span className="flex items-center gap-1 text-[11px] text-brand-text-secondary truncate max-w-[180px]">
+                          <Mail className="h-3 w-3" />
+                          {ticket.agency.email}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Row 4: Category + Priority + Date */}

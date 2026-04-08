@@ -38,6 +38,7 @@ export interface Ticket {
   managed_by: number | null;
   attachments: TicketAttachment[];
   unread_count: number;
+  rating: number | null;
   created_at: string;
   updated_at: string;
 }
