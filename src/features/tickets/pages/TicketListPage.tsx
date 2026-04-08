@@ -245,12 +245,18 @@ export function TicketListPage() {
                   onClick={() => navigate(`/tickets/${ticket.id}`)}
                   className="bg-white rounded-xl border border-brand-border p-4 hover:shadow-md cursor-pointer transition-shadow"
                 >
-                  {/* Row 1: ID + Status + Unread */}
+                  {/* Row 1: Ticket code + Rating + Status + Unread */}
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono text-brand-text-secondary">
                         {ticket.ticket_code}
                       </span>
+                      {ticket.rating != null && (
+                        <span className="flex items-center gap-0.5 text-xs text-brand-text-secondary">
+                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          {ticket.rating}/5
+                        </span>
+                      )}
                       {ticket.unread_count > 0 && (
                         <span className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold">
                           {ticket.unread_count}
@@ -264,25 +270,6 @@ export function TicketListPage() {
                   <p className="mt-2 text-sm font-semibold text-brand-text-primary line-clamp-2">
                     {ticket.subject}
                   </p>
-
-                  {/* Row 3: Rating */}
-                  {ticket.rating != null && (
-                    <div className="mt-2 flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`h-3.5 w-3.5 ${
-                            star <= ticket.rating!
-                              ? 'fill-amber-400 text-amber-400'
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                      <span className="text-xs text-brand-text-secondary ml-1">
-                        {ticket.rating}/5
-                      </span>
-                    </div>
-                  )}
 
                   {/* Row 4: Agency info */}
                   <div className="mt-2 space-y-1">

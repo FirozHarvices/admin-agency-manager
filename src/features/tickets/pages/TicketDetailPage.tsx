@@ -11,7 +11,7 @@ import {
 import type { TicketStatus, TicketPriority } from '../types';
 import { RootState } from '@/store';
 import toast from 'react-hot-toast';
-import { ChevronLeft, Paperclip, Download, Eye, User } from 'lucide-react';
+import { ChevronLeft, Paperclip, Download, Eye, User, Star } from 'lucide-react';
 import { ChatPanel } from '@/features/chat/components/ChatPanel';
 import {
   Select,
@@ -167,6 +167,12 @@ export function TicketDetailPage() {
               >
                 {TICKET_PRIORITY_CONFIG[ticket.priority].label}
               </span>
+              {ticket.rating != null && (
+                <div className="flex items-center gap-1 ml-1">
+                  <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                  <span className="text-xs text-brand-text-secondary">{ticket.rating}/5</span>
+                </div>
+              )}
             </div>
             <h1 className="mt-2 text-lg font-bold text-brand-text-primary">{ticket.subject}</h1>
             <div className="mt-2 flex gap-4 text-xs text-brand-text-secondary">
