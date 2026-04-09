@@ -39,6 +39,7 @@ export interface Ticket {
   attachments: TicketAttachment[];
   unread_count: number;
   rating: number | null;
+  is_reopen?: boolean;
   created_at: string;
   updated_at: string;
 }

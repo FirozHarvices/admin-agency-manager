@@ -11,7 +11,7 @@ import {
 import type { TicketStatus, TicketPriority } from '../types';
 import { RootState } from '@/store';
 import toast from 'react-hot-toast';
-import { ChevronLeft, Paperclip, Download, Eye, User, Star } from 'lucide-react';
+import { ChevronLeft, Paperclip, Download, Eye, User, Star, RefreshCw } from 'lucide-react';
 import { ChatPanel } from '@/features/chat/components/ChatPanel';
 import {
   Select,
@@ -65,7 +65,7 @@ export function TicketDetailPage() {
     await updateTicketMutation.mutateAsync({ id: ticketId, payload });
   };
 
-  const PREVIEWABLE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'pdf', 'txt'];
+  const PREVIEWABLE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'pdf', 'txt', 'mp4', 'webm', 'ogg'];
 
   const getFileUrl = (path: string) =>
     `${import.meta.env.VITE_FILE_DOWNLOAD_URL}/${path}`;
@@ -161,6 +161,12 @@ export function TicketDetailPage() {
           <div className="bg-white rounded-xl border border-brand-border p-4">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-mono text-brand-text-secondary">{ticket.ticket_code}</span>
+              {ticket.is_reopen && (
+                <span className="inline-flex items-center gap-1 pl-1 pr-1.5 py-[1px] rounded-md text-[9px] font-bold border border-red-200 bg-red-50 text-red-600 uppercase">
+                  <RefreshCw className="h-2.5 w-2.5" />
+                  Reopened
+                </span>
+              )}
               <TicketStatusBadge status={ticket.ticket_status} />
               <span
                 className={`text-xs font-medium ${TICKET_PRIORITY_CONFIG[ticket.priority].color}`}

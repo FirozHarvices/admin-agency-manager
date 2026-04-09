@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket as TicketIcon, Search, Star, Phone, Mail } from 'lucide-react';
+import { Ticket as TicketIcon, Search, Star, Phone, Mail, RefreshCw } from 'lucide-react';
 import { useTickets } from '../hooks';
 import { TicketStatusBadge } from '../components/TicketStatusBadge';
 import {
@@ -69,6 +69,7 @@ export function TicketListPage() {
           t.agency?.phone,
           TICKET_CATEGORY_CONFIG[t.category]?.label,
           TICKET_PRIORITY_CONFIG[t.priority]?.label,
+          t.is_reopen ? 'reopened' : '',
         ];
         if (!fields.some((f) => f?.toLowerCase().includes(q))) return false;
       }
@@ -263,7 +264,15 @@ export function TicketListPage() {
                         </span>
                       )}
                     </div>
-                    <TicketStatusBadge status={ticket.ticket_status} />
+                    <div className="flex items-center gap-2">
+                      {ticket.is_reopen && (
+                        <span className="inline-flex items-center gap-1 pl-1 pr-1.5 py-[1px] rounded-md text-[9px] font-bold border border-red-200 bg-red-50 text-red-600 uppercase">
+                          <RefreshCw className="h-2.5 w-2.5" />
+                          Reopened
+                        </span>
+                      )}
+                      <TicketStatusBadge status={ticket.ticket_status} />
+                    </div>
                   </div>
 
                   {/* Row 2: Subject */}
