@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSetPageMeta } from '@/hooks/useSetPageMeta';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useTicket, useUpdateTicket } from '../hooks';
@@ -26,6 +27,7 @@ const SkeletonBlock = ({ className = '' }: { className?: string }) => (
 );
 
 export function TicketDetailPage() {
+  useSetPageMeta('Ticket Details', 'View and manage ticket information');
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const ticketId = Number(id);
@@ -99,6 +101,18 @@ export function TicketDetailPage() {
   const formatCamelCase = (str: string) =>
     str.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 
+  const getDisplayName = (path: string) => {
+    const fileName = path.split('/').pop() ?? path;
+    const dotIndex = fileName.lastIndexOf('.');
+    const name = dotIndex > 0 ? fileName.slice(0, dotIndex) : fileName;
+    const ext = dotIndex > 0 ? fileName.slice(dotIndex) : '';
+    const dashIndex = name.lastIndexOf('-');
+    if (dashIndex > 0) {
+      return name.slice(0, dashIndex) + ext;
+    }
+    return fileName;
+  };
+
   // Loading
   if (isLoading) {
     return (
@@ -156,9 +170,9 @@ export function TicketDetailPage() {
       {/* Two column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left panel */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 bg-gray-50/80 rounded-xl border border-gray-100 p-4">
           {/* Section 1 — Ticket header */}
-          <div className="bg-white rounded-xl border border-brand-border p-4">
+          <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-mono text-brand-text-secondary">{ticket.ticket_code}</span>
               {ticket.is_reopen && (
@@ -194,58 +208,56 @@ export function TicketDetailPage() {
             </div>
           </div>
 
+          <hr className="my-3 border-gray-200" />
+
           {/* Section 2 — Description */}
-          <div className="mt-4 bg-white rounded-xl border border-brand-border p-4">
-            <p className="text-xs text-gray-500 mb-2">Description</p>
-            <p className="text-sm text-brand-text-primary whitespace-pre-wrap leading-relaxed">
-              {ticket.description}
-            </p>
-          </div>
+          <p className="text-sm text-brand-text-primary whitespace-pre-wrap leading-relaxed">
+            {ticket.description}
+          </p>
 
           {/* Section 3 — Additional details */}
           {Object.keys(ticket.category_values).length > 0 && (
-            <div className="mt-4 bg-white rounded-xl border border-brand-border p-4">
-              <p className="text-xs text-gray-500 mb-3">Additional Details</p>
-              <div className="grid grid-cols-2 gap-3">
-                {Object.entries(ticket.category_values).map(([key, value]) => (
-                  <div key={key}>
-                    <p className="text-xs text-gray-500 mb-0.5">{formatCamelCase(key)}</p>
-                    <p className="text-sm font-medium text-brand-text-primary">{value}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {Object.entries(ticket.category_values).map(([key, value]) => (
+                <span
+                  key={key}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-gray-200 bg-white text-xs"
+                >
+                  <span className="font-semibold text-brand-text-primary">{formatCamelCase(key)}:</span>
+                  <span className="text-brand-text-secondary">{value}</span>
+                </span>
+              ))}
             </div>
           )}
 
           {/* Section 4 — Attachments */}
           {ticket.attachments.length > 0 && (
-            <div className="mt-4 bg-white rounded-xl border border-brand-border p-4">
-              <p className="text-xs text-gray-500 mb-3">Attachments</p>
-              {ticket.attachments.map((attachment) => (
-                <div
-                  key={attachment.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Paperclip className="h-4 w-4 text-brand-text-secondary flex-shrink-0" />
-                    <span className="text-sm text-brand-text-primary truncate">
-                      {attachment.attachment_path}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => handleAttachmentClick(attachment.attachment_path)}
-                    className="flex-shrink-0 ml-2 p-1.5 rounded-md hover:bg-gray-100 transition-colors"
-                    title={isPreviewable(attachment.attachment_path) ? 'Preview' : 'Download'}
-                  >
-                    {isPreviewable(attachment.attachment_path) ? (
-                      <Eye className="h-4 w-4 text-brand-text-secondary" />
-                    ) : (
-                      <Download className="h-4 w-4 text-brand-text-secondary" />
-                    )}
-                  </button>
+            <>
+              <hr className="my-3 border-gray-200" />
+              <div>
+                <p className="text-xs text-gray-500 mb-2">Attachments</p>
+                <div className="flex flex-wrap gap-2">
+                  {ticket.attachments.map((attachment) => (
+                    <button
+                      key={attachment.id}
+                      onClick={() => handleAttachmentClick(attachment.attachment_path)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-colors group max-w-[220px]"
+                      title={isPreviewable(attachment.attachment_path) ? 'Preview' : 'Download'}
+                    >
+                      <Paperclip className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                      <span className="text-xs text-brand-text-primary truncate">
+                        {getDisplayName(attachment.attachment_path)}
+                      </span>
+                      {isPreviewable(attachment.attachment_path) ? (
+                        <Eye className="h-3.5 w-3.5 text-gray-400 group-hover:text-brand-primary flex-shrink-0" />
+                      ) : (
+                        <Download className="h-3.5 w-3.5 text-gray-400 group-hover:text-brand-primary flex-shrink-0" />
+                      )}
+                    </button>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            </>
           )}
 
           {/* Section 5 — Conversation */}
@@ -253,9 +265,9 @@ export function TicketDetailPage() {
         </div>
 
         {/* Right sidebar */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 bg-gray-50/80 rounded-xl border border-gray-100 p-4 h-fit">
           {/* Panel 1 — Agency Info */}
-          <div className="bg-white rounded-xl border border-brand-border p-4 mb-4">
+          <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
               Agency
             </p>
@@ -273,8 +285,10 @@ export function TicketDetailPage() {
             )}
           </div>
 
+          <hr className="my-3 border-gray-200" />
+
           {/* Panel 2 — Update Status & Severity */}
-          <div className="bg-white rounded-xl border border-brand-border p-4 mb-4">
+          <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
               Update Ticket
             </p>

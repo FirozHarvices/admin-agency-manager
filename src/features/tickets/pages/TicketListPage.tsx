@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useSetPageMeta } from '@/hooks/useSetPageMeta';
 import { useNavigate } from 'react-router-dom';
 import { Ticket as TicketIcon, Search, Star, Phone, Mail, RefreshCw } from 'lucide-react';
 import { useTickets } from '../hooks';
@@ -38,6 +39,7 @@ const SkeletonCard = () => (
 );
 
 export function TicketListPage() {
+  useSetPageMeta('Support Tickets', 'Manage and resolve agency support requests');
   const navigate = useNavigate();
   const { data: tickets, isLoading, error, refetch } = useTickets();
 
@@ -56,28 +58,41 @@ export function TicketListPage() {
     return Array.from(map.entries());
   }, [tickets]);
 
+  const STATUS_SORT_ORDER: Record<string, number> = {
+    OPEN: 0,
+    IN_PROGRESS: 1,
+    RESOLVED: 2,
+    CLOSED: 3,
+  };
+
   const filteredTickets = useMemo(() => {
     if (!tickets) return [];
-    return tickets.filter((t) => {
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        const fields = [
-          t.ticket_code,
-          t.subject,
-          t.agency?.name,
-          t.agency?.email,
-          t.agency?.phone,
-          TICKET_CATEGORY_CONFIG[t.category]?.label,
-          TICKET_PRIORITY_CONFIG[t.priority]?.label,
-          t.is_reopen ? 'reopened' : '',
-        ];
-        if (!fields.some((f) => f?.toLowerCase().includes(q))) return false;
-      }
-      if (statusFilter !== 'ALL' && t.ticket_status !== statusFilter) return false;
-      if (categoryFilter !== 'ALL' && t.category !== categoryFilter) return false;
-      if (agencyFilter !== 'ALL' && t.agency_id.toString() !== agencyFilter) return false;
-      return true;
-    });
+    return tickets
+      .filter((t) => {
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          const fields = [
+            t.ticket_code,
+            t.subject,
+            t.agency?.name,
+            t.agency?.email,
+            t.agency?.phone,
+            TICKET_CATEGORY_CONFIG[t.category]?.label,
+            TICKET_PRIORITY_CONFIG[t.priority]?.label,
+            t.is_reopen ? 'reopened' : '',
+          ];
+          if (!fields.some((f) => f?.toLowerCase().includes(q))) return false;
+        }
+        if (statusFilter !== 'ALL' && t.ticket_status !== statusFilter) return false;
+        if (categoryFilter !== 'ALL' && t.category !== categoryFilter) return false;
+        if (agencyFilter !== 'ALL' && t.agency_id.toString() !== agencyFilter) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const orderA = STATUS_SORT_ORDER[a.ticket_status] ?? 0;
+        const orderB = STATUS_SORT_ORDER[b.ticket_status] ?? 0;
+        return orderA - orderB;
+      });
   }, [tickets, searchQuery, statusFilter, categoryFilter, agencyFilter]);
 
   const stats = useMemo(() => {
@@ -100,14 +115,6 @@ export function TicketListPage() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-3 lg:p-4">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-brand-text-primary">Support Tickets</h1>
-        <p className="text-sm text-brand-text-secondary mt-1">
-          Manage and resolve agency support requests
-        </p>
-      </div>
-
       {/* Stats */}
       {!isLoading && tickets && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4 mb-6">

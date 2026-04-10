@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useSetPageMeta } from '@/hooks/useSetPageMeta';
+import { RootState } from '@/store';
 import { Button } from '../components/ui/button';
 import { useGetAgencies } from '../features/agency/hooks/useAgencyData';
 import AgencyCard from '../features/agency/components/AgencyCard';
@@ -9,6 +12,9 @@ import StorageOverview from '../components/StorageOverview';
 import { useSystemData } from '../features/agency/hooks/useSystemData';
 
 export default function AgencyManagementPage() {
+  const userName = useSelector((state: RootState) => state.auth.user?.name);
+  const firstName = userName?.split(' ')[0] ?? 'Guest';
+  useSetPageMeta(`Great to see you, ${firstName}! 👋`, "Let's create creative websites for your clients!");
   const { data: agencies, isLoading: isLoadingAgencies, error: agenciesError } = useGetAgencies();
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

@@ -1,18 +1,19 @@
 
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronDown, LogOut } from 'lucide-react';
+import { ChevronDown, LogOut } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
-import { Dropdown, DropdownItem } from '../ui/Dropdown'; 
-import { logout } from '../../features/auth/store/authSlice'; 
+import { Dropdown, DropdownItem } from '../ui/Dropdown';
+import { logout } from '../../features/auth/store/authSlice';
 import { AppDispatch, RootState } from '../../store';
+import { usePageMeta } from '@/contexts/PageMetaContext';
 
 export function Header() {
   const user = useSelector((state: RootState) => state.auth.user);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { meta } = usePageMeta();
 
-  const getFirstName = (name: string = '') => name.split(' ')[0];
   const getShortName = (name: string = '') => {
       const words = name.split(' ').filter(Boolean);
       if (words.length === 0) return 'User';
@@ -31,10 +32,10 @@ export function Header() {
   return (
     <header className="h-20 flex-shrink-0 flex items-center justify-between px-8">
       <div>
-        <h1 className="text-lg font-bold text-brand-text-primary">
-          Great to see you, {getFirstName(displayName)}! 👋
-        </h1>
-        <p className="text-sm text-brand-text-secondary">Let's create creative websites for your clients!</p>
+        <h1 className="text-lg font-bold text-brand-text-primary">{meta.title}</h1>
+        {meta.subtitle && (
+          <p className="text-sm text-brand-text-secondary">{meta.subtitle}</p>
+        )}
       </div>
       <div className="flex items-center gap-6">
           {/* <div className="relative">
