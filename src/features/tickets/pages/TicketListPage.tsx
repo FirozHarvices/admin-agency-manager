@@ -82,10 +82,9 @@ export function TicketListPage() {
         return true;
       })
       .sort((a, b) => {
-        const aIsBottom = a.ticket_status === 'RESOLVED' || a.ticket_status === 'CLOSED';
-        const bIsBottom = b.ticket_status === 'RESOLVED' || b.ticket_status === 'CLOSED';
-        if (aIsBottom === bIsBottom) return 0;
-        return aIsBottom ? 1 : -1;
+        const order = (s: string) =>
+          s === 'RESOLVED' ? 1 : s === 'CLOSED' ? 2 : 0;
+        return order(a.ticket_status) - order(b.ticket_status);
       });
   }, [tickets, searchQuery, statusFilter, categoryFilter, agencyFilter]);
 
