@@ -58,13 +58,6 @@ export function TicketListPage() {
     return Array.from(map.entries());
   }, [tickets]);
 
-  const STATUS_SORT_ORDER: Record<string, number> = {
-    OPEN: 0,
-    IN_PROGRESS: 1,
-    RESOLVED: 2,
-    CLOSED: 3,
-  };
-
   const filteredTickets = useMemo(() => {
     if (!tickets) return [];
     return tickets
@@ -89,9 +82,10 @@ export function TicketListPage() {
         return true;
       })
       .sort((a, b) => {
-        const orderA = STATUS_SORT_ORDER[a.ticket_status] ?? 0;
-        const orderB = STATUS_SORT_ORDER[b.ticket_status] ?? 0;
-        return orderA - orderB;
+        const aIsBottom = a.ticket_status === 'RESOLVED' || a.ticket_status === 'CLOSED';
+        const bIsBottom = b.ticket_status === 'RESOLVED' || b.ticket_status === 'CLOSED';
+        if (aIsBottom === bIsBottom) return 0;
+        return aIsBottom ? 1 : -1;
       });
   }, [tickets, searchQuery, statusFilter, categoryFilter, agencyFilter]);
 
