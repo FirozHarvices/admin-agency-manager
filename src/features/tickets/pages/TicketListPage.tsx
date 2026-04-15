@@ -22,10 +22,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 
-const REOPENED_OPTION = { key: 'REOPENED' as const, label: 'Reopened', color: '#EF4444' };
-const STATUS_OPTIONS = [REOPENED_OPTION, ...KANBAN_COLUMNS];
+const STATUS_OPTIONS = KANBAN_COLUMNS;
 const DEFAULT_STATUSES = new Set([
-  'REOPENED',
   'OPEN',
   'IN_PROGRESS',
   'WAITING_ON_CUSTOMER',
@@ -97,10 +95,15 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
       </p>
 
       {/* Row 3: Agency tag */}
-      <div className="mb-2">
+      <div className="mb-2 flex items-center gap-1.5 flex-wrap">
         <span className="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#EEEDFF] text-[#5B52E0]">
           {ticket.agency?.name ?? `Agency #${ticket.agency_id}`}
         </span>
+        {ticket.is_reopen && (
+          <span className="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200">
+            Reopened
+          </span>
+        )}
       </div>
 
       {/* Row 4: Contact info */}
@@ -160,9 +163,10 @@ export function TicketListPage() {
     });
   };
 
-  const statusLabel = selectedStatuses.size === STATUS_OPTIONS.length
+  const selectedStatusCount = STATUS_OPTIONS.filter((o) => selectedStatuses.has(o.key)).length;
+  const statusLabel = selectedStatusCount === STATUS_OPTIONS.length
     ? 'All Statuses'
-    : `${selectedStatuses.size} Statuses`;
+    : `${selectedStatusCount} Statuses`;
 
   const agencies = useMemo(() => {
     if (!tickets) return [];
@@ -177,8 +181,7 @@ export function TicketListPage() {
   const filteredTickets = useMemo(() => {
     if (!tickets) return [];
     return tickets.filter((t) => {
-      const statusKey = t.is_reopen ? 'REOPENED' : t.ticket_status;
-      if (!selectedStatuses.has(statusKey)) return false;
+      if (!selectedStatuses.has(t.ticket_status)) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const fields = [
@@ -336,41 +339,10 @@ export function TicketListPage() {
             </div>
           ) : (
             <div className="flex gap-3.5 overflow-x-auto pb-2 items-start">
-              {/* Reopened column — only visible when reopened tickets exist */}
-              {(() => {
-                if (!selectedStatuses.has('REOPENED')) return null;
-                const reopenedTickets = filteredTickets.filter((t) => t.is_reopen);
-                if (reopenedTickets.length === 0) return null;
-                return (
-                  <div className="flex-shrink-0 w-[270px] bg-[#ECEEF4] rounded-[10px] p-2.5">
-                    <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#DDE0EC]">
-                      <span
-                        className="text-[11px] font-bold uppercase tracking-wide"
-                        style={{ color: '#EF4444' }}
-                      >
-                        Reopened
-                      </span>
-                      <span className="text-[11px] font-semibold bg-white border border-[#E4E6EF] rounded-full px-2 py-px text-[#9A9CB8]">
-                        {reopenedTickets.length}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {reopenedTickets.map((ticket) => (
-                        <TicketCard
-                          key={ticket.id}
-                          ticket={ticket}
-                          onClick={() => navigate(`/tickets/${ticket.id}`)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
               {/* Status columns */}
               {KANBAN_COLUMNS.filter((col) => selectedStatuses.has(col.key)).map((col) => {
                 const colTickets = filteredTickets.filter(
-                  (t) => t.ticket_status === col.key && !t.is_reopen
+                  (t) => t.ticket_status === col.key
                 );
                 return (
                   <div
