@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, MessageCircle, Sparkles, Ticket } from 'lucide-react';
 import { useTickets } from '@/features/tickets/hooks';
-import { useNewTickets } from '@/features/chat/providers/SocketProvider';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -18,7 +17,7 @@ const navItems = [
 export function Sidebar() {
   const { data: tickets } = useTickets();
   const totalUnread = tickets?.reduce((sum, t) => sum + (t.unread_count || 0), 0) ?? 0;
-  const { newTicketCount } = useNewTickets();
+  const unassignedCount = tickets?.filter((t) => t.managed_by === null).length ?? 0;
 
   return (
     <aside className="w-64 flex-shrink-0 bg-white rounded-2xl shadow-sm flex flex-col">
@@ -45,13 +44,13 @@ export function Sidebar() {
             >
               <item.icon className="h-5 w-5 mr-3" />
               {item.label}
-              {item.to === '/tickets' && (newTicketCount > 0 || totalUnread > 0) && (
+              {item.to === '/tickets' && (unassignedCount > 0 || totalUnread > 0) && (
                 <span className="ml-auto flex items-center gap-1.5">
-                  {newTicketCount > 0 && (
+                  {unassignedCount > 0 && (
                     <span
                       className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm animate-pulse"
-                      title="New ticket"
-                      aria-label="New ticket"
+                      title={`${unassignedCount} unassigned ticket${unassignedCount === 1 ? '' : 's'}`}
+                      aria-label={`${unassignedCount} unassigned ticket${unassignedCount === 1 ? '' : 's'}`}
                     >
                       <Ticket className="h-3 w-3" />
                     </span>
