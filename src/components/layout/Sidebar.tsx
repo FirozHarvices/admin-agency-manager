@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Sparkles, Ticket } from 'lucide-react';
+import { LayoutDashboard, MessageCircle, Sparkles, Ticket } from 'lucide-react';
 import { useTickets } from '@/features/tickets/hooks';
 import { useNewTickets } from '@/features/chat/providers/SocketProvider';
 
@@ -48,10 +48,22 @@ export function Sidebar() {
               {item.to === '/tickets' && (newTicketCount > 0 || totalUnread > 0) && (
                 <span className="ml-auto flex items-center gap-1.5">
                   {newTicketCount > 0 && (
-                    <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                    <span
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm animate-pulse"
+                      title="New ticket"
+                      aria-label="New ticket"
+                    >
+                      <Ticket className="h-3 w-3" />
+                    </span>
                   )}
                   {totalUnread > 0 && (
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    <span
+                      className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-sm animate-pulse"
+                      title="Unread chat"
+                      aria-label="Unread chat"
+                    >
+                      <MessageCircle className="h-3 w-3" />
+                    </span>
                   )}
                 </span>
               )}

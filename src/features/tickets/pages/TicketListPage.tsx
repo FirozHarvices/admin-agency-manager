@@ -2,16 +2,15 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSetPageMeta } from '@/hooks/useSetPageMeta';
 import { useNavigate } from 'react-router-dom';
 import { useNewTickets } from '@/features/chat/providers/SocketProvider';
-import { Ticket as TicketIcon, Search, Star, Phone, Mail, RefreshCw } from 'lucide-react';
+import { Ticket as TicketIcon, Search, Star, Phone, Mail, ChevronDown } from 'lucide-react';
 import { useTickets } from '../hooks';
-import { TicketStatusBadge } from '../components/TicketStatusBadge';
 import {
-  TICKET_STATUS_CONFIG,
   TICKET_CATEGORY_CONFIG,
   TICKET_PRIORITY_CONFIG,
   CATEGORY_OPTIONS,
+  KANBAN_COLUMNS,
 } from '../constants';
-import { TicketStatus, TicketCategory } from '../types';
+import { TicketCategory, Ticket } from '../types';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -20,12 +19,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const REOPENED_OPTION = { key: 'REOPENED' as const, label: 'Reopened', color: '#EF4444' };
+const STATUS_OPTIONS = [REOPENED_OPTION, ...KANBAN_COLUMNS];
+const DEFAULT_STATUSES = new Set([
+  'REOPENED',
+  'OPEN',
+  'IN_PROGRESS',
+  'WAITING_ON_CUSTOMER',
+  'WAITING_ON_3RD_PARTY',
+]);
 
 const SkeletonCard = () => (
-  <div
-    role="status"
-    className="animate-pulse bg-white rounded-xl border border-brand-border p-4 space-y-3"
-  >
+  <div role="status" className="animate-pulse bg-white rounded-[10px] border border-[#E4E6EF] p-3.5 space-y-2">
     <div className="flex justify-between">
       <div className="bg-gray-200/70 rounded h-3 w-20" />
       <div className="bg-gray-200/70 rounded-full h-5 w-16" />
@@ -39,6 +47,95 @@ const SkeletonCard = () => (
   </div>
 );
 
+const SkeletonColumn = () => (
+  <div className="flex-shrink-0 w-[270px] bg-[#ECEEF4] rounded-[10px] p-2.5">
+    <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#DDE0EC]">
+      <div className="bg-gray-300/50 rounded h-3 w-20" />
+      <div className="bg-white rounded-full h-5 w-8" />
+    </div>
+    <div className="space-y-2">
+      <SkeletonCard />
+      <SkeletonCard />
+    </div>
+  </div>
+);
+
+function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }) {
+  return (
+    <div
+      onClick={onClick}
+      className="bg-white rounded-[10px] border border-[#E4E6EF] p-3.5 cursor-pointer transition-all hover:border-brand-primary hover:shadow-[0_4px_16px_rgba(93,80,254,0.12)]"
+    >
+      {/* Row 1: Ticket code + Rating + Unread + Status */}
+      <div className="flex justify-between items-center mb-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-mono text-[#9A9CB8]">
+            {ticket.ticket_code}
+          </span>
+          {ticket.rating != null && (
+            <span className="flex items-center gap-0.5 text-[11px] text-[#9A9CB8]">
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+              {ticket.rating}/5
+            </span>
+          )}
+          {ticket.unread_count > 0 && (
+            <span className="inline-flex items-center justify-center h-[18px] min-w-[18px] px-1 rounded-full bg-red-500 text-white text-[9px] font-bold">
+              {ticket.unread_count}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className={`text-[11px] font-semibold ${TICKET_PRIORITY_CONFIG[ticket.priority].color}`}>
+            {TICKET_PRIORITY_CONFIG[ticket.priority].label}
+          </span>
+        </div>
+      </div>
+
+      {/* Row 2: Subject */}
+      <p className="text-sm font-bold text-[#1B1D29] leading-snug line-clamp-2 mb-2">
+        {ticket.subject}
+      </p>
+
+      {/* Row 3: Agency tag */}
+      <div className="mb-2">
+        <span className="inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#EEEDFF] text-[#5B52E0]">
+          {ticket.agency?.name ?? `Agency #${ticket.agency_id}`}
+        </span>
+      </div>
+
+      {/* Row 4: Contact info */}
+      <div className="flex items-center gap-3 flex-wrap mb-2">
+        {ticket.agency?.phone && (
+          <span className="flex items-center gap-1 text-[11px] text-[#6E7191]">
+            <Phone className="h-[11px] w-[11px]" />
+            {ticket.agency.phone}
+          </span>
+        )}
+        {ticket.agency?.email && (
+          <span className="flex items-center gap-1 text-[11px] text-[#6E7191] truncate max-w-[160px]">
+            <Mail className="h-[11px] w-[11px]" />
+            {ticket.agency.email}
+          </span>
+        )}
+      </div>
+
+      {/* Row 5: Category + Date */}
+      <div className="flex items-center justify-between pt-2 border-t border-[#F0F1F8]">
+        <span className="text-[11px] text-[#6E7191] bg-[#F4F6FA] border border-[#E4E6EF] rounded-md px-2 py-0.5">
+          {TICKET_CATEGORY_CONFIG[ticket.category].label}
+        </span>
+        <span className="text-[11px] text-[#6E7191]">
+          {new Date(ticket.created_at).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          })}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function TicketListPage() {
   useSetPageMeta('Support Tickets', 'Manage and resolve agency support requests');
   const navigate = useNavigate();
@@ -50,9 +147,22 @@ export function TicketListPage() {
   }, [newTicketCount, clearNewTickets]);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<TicketStatus | 'ALL'>('ALL');
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<string>>(() => new Set(DEFAULT_STATUSES));
   const [categoryFilter, setCategoryFilter] = useState<TicketCategory | 'ALL'>('ALL');
   const [agencyFilter, setAgencyFilter] = useState('ALL');
+
+  const toggleStatus = (key: string) => {
+    setSelectedStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const statusLabel = selectedStatuses.size === STATUS_OPTIONS.length
+    ? 'All Statuses'
+    : `${selectedStatuses.size} Statuses`;
 
   const agencies = useMemo(() => {
     if (!tickets) return [];
@@ -66,111 +176,89 @@ export function TicketListPage() {
 
   const filteredTickets = useMemo(() => {
     if (!tickets) return [];
-    return tickets
-      .filter((t) => {
-        if (searchQuery) {
-          const q = searchQuery.toLowerCase();
-          const fields = [
-            t.ticket_code,
-            t.subject,
-            t.agency?.name,
-            t.agency?.email,
-            t.agency?.phone,
-            TICKET_CATEGORY_CONFIG[t.category]?.label,
-            TICKET_PRIORITY_CONFIG[t.priority]?.label,
-            t.is_reopen ? 'reopened' : '',
-          ];
-          if (!fields.some((f) => f?.toLowerCase().includes(q))) return false;
-        }
-        if (statusFilter !== 'ALL' && t.ticket_status !== statusFilter) return false;
-        if (categoryFilter !== 'ALL' && t.category !== categoryFilter) return false;
-        if (agencyFilter !== 'ALL' && t.agency_id.toString() !== agencyFilter) return false;
-        return true;
-      })
-      .sort((a, b) => {
-        const order = (s: string) =>
-          s === 'RESOLVED' ? 1 : s === 'CLOSED' ? 2 : 0;
-        return order(a.ticket_status) - order(b.ticket_status);
-      });
-  }, [tickets, searchQuery, statusFilter, categoryFilter, agencyFilter]);
-
-  const stats = useMemo(() => {
-    if (!tickets) return { open: 0, inProgress: 0, resolved: 0, total: 0 };
-    return {
-      open: tickets.filter((t) => t.ticket_status === 'OPEN')
-        .length,
-      inProgress: tickets.filter((t) => t.ticket_status === 'IN_PROGRESS').length,
-      resolved: tickets.filter((t) => t.ticket_status === 'RESOLVED').length,
-      total: tickets.length,
-    };
-  }, [tickets]);
+    return tickets.filter((t) => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const fields = [
+          t.ticket_code,
+          t.subject,
+          t.agency?.name,
+          t.agency?.email,
+          t.agency?.phone,
+          TICKET_CATEGORY_CONFIG[t.category]?.label,
+          TICKET_PRIORITY_CONFIG[t.priority]?.label,
+          t.is_reopen ? 'reopened' : '',
+        ];
+        if (!fields.some((f) => f?.toLowerCase().includes(q))) return false;
+      }
+      if (categoryFilter !== 'ALL' && t.category !== categoryFilter) return false;
+      if (agencyFilter !== 'ALL' && t.agency_id.toString() !== agencyFilter) return false;
+      return true;
+    }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [tickets, searchQuery, categoryFilter, agencyFilter]);
 
   const clearFilters = () => {
     setSearchQuery('');
-    setStatusFilter('ALL');
+    setSelectedStatuses(new Set(DEFAULT_STATUSES));
     setCategoryFilter('ALL');
     setAgencyFilter('ALL');
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-3 lg:p-4">
-      {/* Stats */}
-      {!isLoading && tickets && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4 mb-6">
-          <div className="bg-white rounded-xl border border-brand-border p-4 flex items-center justify-between">
-            <span className="text-xs text-brand-text-secondary">Open</span>
-            <span className="text-2xl font-bold text-green-600">{stats.open}</span>
-          </div>
-          <div className="bg-white rounded-xl border border-brand-border p-4 flex items-center justify-between">
-            <span className="text-xs text-brand-text-secondary">In Progress</span>
-            <span className="text-2xl font-bold text-amber-600">{stats.inProgress}</span>
-          </div>
-          <div className="bg-white rounded-xl border border-brand-border p-4 flex items-center justify-between">
-            <span className="text-xs text-brand-text-secondary">Resolved</span>
-            <span className="text-2xl font-bold text-blue-600">{stats.resolved}</span>
-          </div>
-          <div className="bg-white rounded-xl border border-brand-border p-4 flex items-center justify-between">
-            <span className="text-xs text-brand-text-secondary">Total</span>
-            <span className="text-2xl font-bold text-brand-primary">{stats.total}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Filter bar */}
-      <div className="flex flex-wrap gap-3 mb-4">
+    <div className="bg-[#F4F6FA] rounded-xl p-3 lg:p-5">
+      {/* Top bar */}
+      <div className="flex items-center gap-2.5 flex-wrap mb-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-text-secondary" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#9A9CB8]" />
           <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tickets..."
-            className="pl-9 pr-3 w-auto"
+            className="pl-9 pr-3 w-[220px] text-[13px] h-9 bg-white border-[#E4E6EF]"
           />
         </div>
 
-        <Select
-          value={statusFilter}
-          onValueChange={(val) => setStatusFilter(val as TicketStatus | 'ALL')}
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="All Statuses" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Statuses</SelectItem>
-            {(Object.keys(TICKET_STATUS_CONFIG) as TicketStatus[]).map((key) => (
-              <SelectItem key={key} value={key}>
-                {TICKET_STATUS_CONFIG[key].label}
-              </SelectItem>
+        {!isLoading && tickets && (
+          <span className="text-[13px] text-[#9A9CB8] font-medium ml-1 whitespace-nowrap">
+            Total: <span className="text-[#1B1D29] font-bold">{tickets.length}</span> tickets
+          </span>
+        )}
+
+        <div className="flex-1" />
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="inline-flex items-center justify-between gap-2 h-9 px-3 w-[160px] rounded-md border border-[#E4E6EF] bg-white text-[13px] text-[#1B1D29] hover:bg-gray-50 transition-colors">
+              <span>{statusLabel}</span>
+              <ChevronDown className="h-3.5 w-3.5 text-[#9A9CB8]" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-[220px] p-2">
+            {STATUS_OPTIONS.map((opt) => (
+              <label
+                key={opt.key}
+                className="flex items-center gap-2.5 px-2 py-1.5 rounded-md hover:bg-gray-50 cursor-pointer"
+              >
+                <Checkbox
+                  checked={selectedStatuses.has(opt.key)}
+                  onCheckedChange={() => toggleStatus(opt.key)}
+                />
+                <span
+                  className="h-2 w-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: opt.color }}
+                />
+                <span className="text-[13px] text-[#1B1D29]">{opt.label}</span>
+              </label>
             ))}
-          </SelectContent>
-        </Select>
+          </PopoverContent>
+        </Popover>
 
         <Select
           value={categoryFilter}
           onValueChange={(val) => setCategoryFilter(val as TicketCategory | 'ALL')}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[160px] h-9 text-[13px] bg-white border-[#E4E6EF]">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
@@ -187,7 +275,7 @@ export function TicketListPage() {
           value={agencyFilter}
           onValueChange={setAgencyFilter}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[160px] h-9 text-[13px] bg-white border-[#E4E6EF]">
             <SelectValue placeholder="All Agencies" />
           </SelectTrigger>
           <SelectContent>
@@ -203,9 +291,9 @@ export function TicketListPage() {
 
       {/* Loading */}
       {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
+        <div className="flex gap-3.5 overflow-x-auto pb-2">
           {[...Array(6)].map((_, i) => (
-            <SkeletonCard key={i} />
+            <SkeletonColumn key={i} />
           ))}
         </div>
       )}
@@ -223,20 +311,20 @@ export function TicketListPage() {
         </div>
       )}
 
-      {/* Content */}
+      {/* Kanban Board */}
       {!isLoading && !error && tickets && (
         <>
           {tickets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
               <TicketIcon className="w-12 h-12 text-gray-300" />
-              <h3 className="mt-4 text-lg font-semibold text-brand-text-primary">No tickets yet</h3>
-              <p className="text-sm text-brand-text-secondary mt-1">
+              <h3 className="mt-4 text-lg font-semibold text-[#1B1D29]">No tickets yet</h3>
+              <p className="text-sm text-[#9A9CB8] mt-1">
                 All agency support tickets will appear here
               </p>
             </div>
           ) : filteredTickets.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <p className="text-brand-text-secondary">No tickets match your filters</p>
+              <p className="text-[#9A9CB8]">No tickets match your filters</p>
               <button
                 onClick={clearFilters}
                 className="mt-3 text-sm text-brand-primary hover:underline"
@@ -245,89 +333,79 @@ export function TicketListPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
-              {filteredTickets.map((ticket) => (
-                <div
-                  key={ticket.id}
-                  onClick={() => navigate(`/tickets/${ticket.id}`)}
-                  className="bg-white rounded-xl border border-brand-border p-4 hover:shadow-md cursor-pointer transition-shadow"
-                >
-                  {/* Row 1: Ticket code + Rating + Status + Unread */}
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-brand-text-secondary">
-                        {ticket.ticket_code}
-                      </span>
-                      {ticket.rating != null && (
-                        <span className="flex items-center gap-0.5 text-xs text-brand-text-secondary">
-                          <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                          {ticket.rating}/5
-                        </span>
-                      )}
-                      {ticket.unread_count > 0 && (
-                        <span className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold">
-                          {ticket.unread_count}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {ticket.is_reopen && (
-                        <span className="inline-flex items-center gap-1 pl-1 pr-1.5 py-[1px] rounded-md text-[9px] font-bold border border-red-200 bg-red-50 text-red-600 uppercase">
-                          <RefreshCw className="h-2.5 w-2.5" />
-                          Reopened
-                        </span>
-                      )}
-                      <TicketStatusBadge status={ticket.ticket_status} />
-                    </div>
-                  </div>
-
-                  {/* Row 2: Subject */}
-                  <p className="mt-2 text-sm font-semibold text-brand-text-primary line-clamp-2">
-                    {ticket.subject}
-                  </p>
-
-                  {/* Row 4: Agency info */}
-                  <div className="mt-2 space-y-1">
-                    <span className="text-xs font-medium text-brand-primary bg-brand-primary-light px-2 py-0.5 rounded-full">
-                      {ticket.agency?.name ?? `Agency #${ticket.agency_id}`}
-                    </span>
-                    <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                      {ticket.agency?.phone && (
-                        <span className="flex items-center gap-1 text-[11px] text-brand-text-secondary">
-                          <Phone className="h-3 w-3" />
-                          {ticket.agency.phone}
-                        </span>
-                      )}
-                      {ticket.agency?.email && (
-                        <span className="flex items-center gap-1 text-[11px] text-brand-text-secondary truncate max-w-[180px]">
-                          <Mail className="h-3 w-3" />
-                          {ticket.agency.email}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Row 4: Category + Priority + Date */}
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="text-xs text-brand-text-secondary bg-gray-100 px-2 py-0.5 rounded-full">
-                      {TICKET_CATEGORY_CONFIG[ticket.category].label}
-                    </span>
-                    <span className="text-xs text-brand-text-secondary">
+            <div className="flex gap-3.5 overflow-x-auto pb-2 items-start">
+              {/* Reopened column — only visible when reopened tickets exist */}
+              {(() => {
+                const reopenedTickets = filteredTickets.filter((t) => t.is_reopen);
+                if (reopenedTickets.length === 0) return null;
+                return (
+                  <div className="flex-shrink-0 w-[270px] bg-[#ECEEF4] rounded-[10px] p-2.5">
+                    <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#DDE0EC]">
                       <span
-                        className={`font-medium ${TICKET_PRIORITY_CONFIG[ticket.priority].color}`}
+                        className="text-[11px] font-bold uppercase tracking-wide"
+                        style={{ color: '#EF4444' }}
                       >
-                        {TICKET_PRIORITY_CONFIG[ticket.priority].label}
+                        Reopened
                       </span>
-                      {' · '}
-                      {new Date(ticket.created_at).toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </span>
+                      <span className="text-[11px] font-semibold bg-white border border-[#E4E6EF] rounded-full px-2 py-px text-[#9A9CB8]">
+                        {reopenedTickets.length}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {reopenedTickets.map((ticket) => (
+                        <TicketCard
+                          key={ticket.id}
+                          ticket={ticket}
+                          onClick={() => navigate(`/tickets/${ticket.id}`)}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })()}
+
+              {/* Status columns */}
+              {KANBAN_COLUMNS.map((col) => {
+                const colTickets = filteredTickets.filter(
+                  (t) => t.ticket_status === col.key && !t.is_reopen
+                );
+                return (
+                  <div
+                    key={col.key}
+                    className="flex-shrink-0 w-[270px] bg-[#ECEEF4] rounded-[10px] p-2.5"
+                  >
+                    {/* Column header */}
+                    <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#DDE0EC]">
+                      <span
+                        className="text-[11px] font-bold uppercase tracking-wide"
+                        style={{ color: col.color }}
+                      >
+                        {col.label}
+                      </span>
+                      <span className="text-[11px] font-semibold bg-white border border-[#E4E6EF] rounded-full px-2 py-px text-[#9A9CB8]">
+                        {colTickets.length}
+                      </span>
+                    </div>
+
+                    {/* Cards */}
+                    {colTickets.length === 0 ? (
+                      <p className="text-center text-[12px] text-[#9A9CB8] py-5">
+                        No tickets
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {colTickets.map((ticket) => (
+                          <TicketCard
+                            key={ticket.id}
+                            ticket={ticket}
+                            onClick={() => navigate(`/tickets/${ticket.id}`)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </>

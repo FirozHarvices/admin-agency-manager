@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { useSelector } from 'react-redux';
 import { useQueryClient } from '@tanstack/react-query';
 import { Socket } from 'socket.io-client';
+import toast from 'react-hot-toast';
 import { getSocket, disconnectSocket } from '@/lib/socket';
 import { RootState } from '@/store';
 import { Ticket } from '@/features/tickets/types';
@@ -44,6 +45,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     s.on('connect_error', (err) => {
       console.error('[Socket] Connection error:', err.message);
+    });
+
+    s.on('error', (data: { message: string }) => {
+      console.error('[Socket] Server error:', data.message);
+      toast.error(data.message || 'A server error occurred');
     });
 
     s.on('increase_count', (data: { sender_id: number; unread_chats_count: Record<string, number> }) => {

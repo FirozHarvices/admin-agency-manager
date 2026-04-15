@@ -98,3 +98,16 @@ export const CATEGORY_OPTIONS = [
   { value: 'GENERAL', label: 'General Question' },
   { value: 'FEATURE_REQUEST', label: 'Feature Request' },
 ] as const;
+
+export const KANBAN_COLUMNS: {
+  key: TicketStatus;
+  label: string;
+  color: string;
+}[] = [
+  { key: 'OPEN', label: 'Open', color: '#22C55E' },
+  { key: 'IN_PROGRESS', label: 'In Progress', color: '#F59E0B' },
+  { key: 'WAITING_ON_CUSTOMER', label: 'Waiting on Customer', color: '#EA580C' },
+  { key: 'WAITING_ON_3RD_PARTY', label: 'Waiting on 3rd Party', color: '#7C3AED' },
+  { key: 'RESOLVED', label: 'Resolved', color: '#3B82F6' },
+  { key: 'CLOSED', label: 'Closed', color: '#94A3B8' },
+];

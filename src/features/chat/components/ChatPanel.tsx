@@ -1,19 +1,34 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useQueryClient } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { RootState } from '@/store';
 import { useSocket } from '../providers/SocketProvider';
 import { useMessages } from '../hooks/useMessages';
 import { useSendMessage } from '../hooks/useSendMessage';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
+import { compressImageIfPossible } from '../utils/compressImage';
 import { Ticket } from '@/features/tickets/types';
 import { TICKET_KEYS } from '@/features/tickets/hooks';
 
 interface ChatPanelProps {
   ticketId: number;
   ticketStatus: string;
+}
+
+/** Reads a File as base64 (without the `data:<mime>;base64,` prefix). */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      resolve(result.split(',')[1] ?? '');
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
 }
 
 export function ChatPanel({ ticketId, ticketStatus }: ChatPanelProps) {
@@ -23,6 +38,7 @@ export function ChatPanel({ ticketId, ticketStatus }: ChatPanelProps) {
   const { data: messages, isLoading } = useMessages(ticketId);
   const sendMutation = useSendMessage(ticketId);
 
+  const [sending, setSending] = useState(false);
   const isClosed = ticketStatus === 'CLOSED';
 
   const emitMarkRead = () => {
@@ -65,14 +81,37 @@ export function ChatPanel({ ticketId, ticketStatus }: ChatPanelProps) {
     };
   }, [socket, ticketId, adminUser, queryClient]);
 
-  const handleSend = (msg: string) => {
+  const handleSend = async (msg: string, files: File[]) => {
     if (!adminUser) return;
+
+    let attachments: { filename: string; content_type: string; content: string }[] = [];
+
+    if (files.length > 0) {
+      try {
+        setSending(true);
+        // Compress images client-side (~90% reduction) before base64-encoding
+        const processed = await Promise.all(files.map(compressImageIfPossible));
+        const contents = await Promise.all(processed.map(fileToBase64));
+        attachments = processed.map((file, i) => ({
+          filename: file.name,
+          content_type: file.type || 'application/octet-stream',
+          content: contents[i],
+        }));
+      } catch {
+        toast.error('Failed to read file(s)');
+        setSending(false);
+        return;
+      } finally {
+        setSending(false);
+      }
+    }
+
     sendMutation.mutate({
       ticket_id: ticketId,
       sender_id: Number(adminUser.id),
       msg,
       sender_type: 'ADMIN',
-      attachment: null,
+      attachments,
     });
   };
 
@@ -98,7 +137,7 @@ export function ChatPanel({ ticketId, ticketStatus }: ChatPanelProps) {
       )}
 
       {/* Input */}
-      <MessageInput onSend={handleSend} disabled={isClosed} />
+      <MessageInput onSend={handleSend} disabled={isClosed} sending={sending} />
     </div>
   );
 }
