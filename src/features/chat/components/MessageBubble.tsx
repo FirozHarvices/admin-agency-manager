@@ -10,19 +10,30 @@ interface MessageBubbleProps {
 const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
 const VIDEO_EXTENSIONS = ['mp4', 'webm', 'ogg'];
 
+const MIME_BY_EXTENSION: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  pdf: 'application/pdf',
+};
+
+function getExtension(path: string) {
+  return path.split('?')[0].split('.').pop()?.toLowerCase() ?? '';
+}
+
 function isImagePath(path: string) {
-  const ext = path.split('.').pop()?.toLowerCase() ?? '';
-  return IMAGE_EXTENSIONS.includes(ext);
+  return IMAGE_EXTENSIONS.includes(getExtension(path));
 }
 
 function isVideoPath(path: string) {
-  const ext = path.split('.').pop()?.toLowerCase() ?? '';
-  return VIDEO_EXTENSIONS.includes(ext);
+  return VIDEO_EXTENSIONS.includes(getExtension(path));
 }
 
 function isPDFPath(path: string) {
-  const ext = path.split('.').pop()?.toLowerCase() ?? '';
-  return ext === 'pdf';
+  return getExtension(path) === 'pdf';
 }
 
 function getAttachmentUrl(path: string) {
@@ -33,13 +44,49 @@ function getFileName(path: string) {
   return path.split('/').pop() ?? 'Download';
 }
 
+async function openBlobPreview(url: string, filename: string, fileTypeLabel: string) {
+  const previewWindow = window.open('', '_blank');
+  if (!previewWindow) {
+    toast.error(`Pop-up blocked. Please allow pop-ups to preview ${fileTypeLabel}.`);
+    return;
+  }
+
+  previewWindow.opener = null;
+  previewWindow.document.write(
+    '<!doctype html><title>Loading preview...</title><body style="font-family: sans-serif; padding: 24px;">Loading preview...</body>'
+  );
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Fetch failed');
+
+    const blob = await response.blob();
+    const mimeType = MIME_BY_EXTENSION[getExtension(filename)] || blob.type;
+    const previewBlob = mimeType && blob.type !== mimeType
+      ? new Blob([blob], { type: mimeType })
+      : blob;
+    const blobUrl = URL.createObjectURL(previewBlob);
+
+    previewWindow.location.href = blobUrl;
+  } catch {
+    toast.error(`Failed to prepare ${fileTypeLabel} preview. Opening direct link instead...`);
+    previewWindow.location.href = url;
+  }
+}
+
 function ImagePreview({ url, filename, isAdmin }: { url: string; filename: string; isAdmin: boolean }) {
   const [failed, setFailed] = useState(false);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    void openBlobPreview(url, filename, 'image');
+  };
 
   if (failed) {
     return (
       <a
         href={url}
+        onClick={handleClick}
         target="_blank"
         rel="noopener noreferrer"
         className={`flex items-center gap-1 text-xs underline ${
@@ -53,7 +100,7 @@ function ImagePreview({ url, filename, isAdmin }: { url: string; filename: strin
   }
 
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="block">
+    <a href={url} onClick={handleClick} target="_blank" rel="noopener noreferrer" className="block">
       <img
         src={url}
         alt={filename}
@@ -103,24 +150,7 @@ function AttachmentView({ attachment, isAdmin }: { attachment: ChatAttachment; i
     if (!isPDF) return;
 
     e.preventDefault();
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Fetch failed');
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      
-      // Open the blob URL in a new tab
-      const win = window.open(blobUrl, '_blank');
-      if (!win) {
-        toast.error('Pop-up blocked. Please allow pop-ups to preview PDFs.');
-      }
-      
-      // Note: We don't revokeObjectURL immediately as the new tab needs it to load.
-      // In a real app, you'd manage these URLs, but for a simple preview this is usually fine.
-    } catch {
-      toast.error('Failed to preview PDF. Downloading instead...');
-      window.open(url, '_blank'); // fallback to direct link (might download)
-    }
+    await openBlobPreview(url, fileName, 'PDF');
   };
 
   return (
