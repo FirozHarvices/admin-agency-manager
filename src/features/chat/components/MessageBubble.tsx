@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Paperclip } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { ChatMessage, ChatAttachment } from '../types';
 
 interface MessageBubbleProps {
@@ -97,9 +98,35 @@ function AttachmentView({ attachment, isAdmin }: { attachment: ChatAttachment; i
 
   const fileName = getFileName(path);
 
+  const handleClick = async (e: React.MouseEvent) => {
+    // Only intercept for PDFs to force browser preview
+    if (!isPDF) return;
+
+    e.preventDefault();
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Fetch failed');
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Open the blob URL in a new tab
+      const win = window.open(blobUrl, '_blank');
+      if (!win) {
+        toast.error('Pop-up blocked. Please allow pop-ups to preview PDFs.');
+      }
+      
+      // Note: We don't revokeObjectURL immediately as the new tab needs it to load.
+      // In a real app, you'd manage these URLs, but for a simple preview this is usually fine.
+    } catch {
+      toast.error('Failed to preview PDF. Downloading instead...');
+      window.open(url, '_blank'); // fallback to direct link (might download)
+    }
+  };
+
   return (
     <a
       href={url}
+      onClick={handleClick}
       target="_blank"
       rel="noopener noreferrer"
       className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border text-xs transition-colors ${
@@ -111,10 +138,10 @@ function AttachmentView({ attachment, isAdmin }: { attachment: ChatAttachment; i
     >
       <Paperclip className="h-3.5 w-3.5 flex-shrink-0" />
       <span className="truncate max-w-[180px]">{fileName}</span>
-      {isPDF && <span className="text-[10px] opacity-70 ml-auto pl-2">(Preview)</span>}
     </a>
   );
 }
+
 
 
 export function MessageBubble({ message }: MessageBubbleProps) {
