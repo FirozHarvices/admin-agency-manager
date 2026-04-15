@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Sparkles, Ticket } from 'lucide-react';
 import { useTickets } from '@/features/tickets/hooks';
+import { useNewTickets } from '@/features/chat/providers/SocketProvider';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -17,6 +18,7 @@ const navItems = [
 export function Sidebar() {
   const { data: tickets } = useTickets();
   const totalUnread = tickets?.reduce((sum, t) => sum + (t.unread_count || 0), 0) ?? 0;
+  const { newTicketCount } = useNewTickets();
 
   return (
     <aside className="w-64 flex-shrink-0 bg-white rounded-2xl shadow-sm flex flex-col">
@@ -43,8 +45,15 @@ export function Sidebar() {
             >
               <item.icon className="h-5 w-5 mr-3" />
               {item.label}
-              {item.to === '/tickets' && totalUnread > 0 && (
-                <span className="ml-auto w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              {item.to === '/tickets' && (newTicketCount > 0 || totalUnread > 0) && (
+                <span className="ml-auto flex items-center gap-1.5">
+                  {newTicketCount > 0 && (
+                    <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" />
+                  )}
+                  {totalUnread > 0 && (
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  )}
+                </span>
               )}
             </NavLink>
           ))}

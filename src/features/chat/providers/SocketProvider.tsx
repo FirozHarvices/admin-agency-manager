@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useQueryClient } from '@tanstack/react-query';
 import { Socket } from 'socket.io-client';
@@ -13,10 +13,21 @@ export function useSocket() {
   return useContext(SocketContext);
 }
 
+const NewTicketContext = createContext<{
+  newTicketCount: number;
+  clearNewTickets: () => void;
+}>({ newTicketCount: 0, clearNewTickets: () => {} });
+
+export function useNewTickets() {
+  return useContext(NewTicketContext);
+}
+
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const user = useSelector((state: RootState) => state.auth.user);
   const queryClient = useQueryClient();
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [newTicketCount, setNewTicketCount] = useState(0);
+  const clearNewTickets = useCallback(() => setNewTicketCount(0), []);
 
   useEffect(() => {
     if (!user) return;
@@ -48,6 +59,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       });
     });
 
+    s.on('create_ticket', (_data: { ticket_id: number }) => {
+      setNewTicketCount((prev) => prev + 1);
+      queryClient.invalidateQueries({ queryKey: TICKET_KEYS.all });
+    });
+
     if (!s.connected) {
       s.connect();
     }
@@ -62,7 +78,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SocketContext.Provider value={socket}>
-      {children}
+      <NewTicketContext.Provider value={{ newTicketCount, clearNewTickets }}>
+        {children}
+      </NewTicketContext.Provider>
     </SocketContext.Provider>
   );
 }

@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSetPageMeta } from '@/hooks/useSetPageMeta';
 import { useNavigate } from 'react-router-dom';
+import { useNewTickets } from '@/features/chat/providers/SocketProvider';
 import { Ticket as TicketIcon, Search, Star, Phone, Mail, RefreshCw } from 'lucide-react';
 import { useTickets } from '../hooks';
 import { TicketStatusBadge } from '../components/TicketStatusBadge';
@@ -42,6 +43,11 @@ export function TicketListPage() {
   useSetPageMeta('Support Tickets', 'Manage and resolve agency support requests');
   const navigate = useNavigate();
   const { data: tickets, isLoading, error, refetch } = useTickets();
+  const { newTicketCount, clearNewTickets } = useNewTickets();
+
+  useEffect(() => {
+    if (newTicketCount > 0) clearNewTickets();
+  }, [newTicketCount, clearNewTickets]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<TicketStatus | 'ALL'>('ALL');
