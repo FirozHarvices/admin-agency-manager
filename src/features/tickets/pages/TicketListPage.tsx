@@ -177,6 +177,8 @@ export function TicketListPage() {
   const filteredTickets = useMemo(() => {
     if (!tickets) return [];
     return tickets.filter((t) => {
+      const statusKey = t.is_reopen ? 'REOPENED' : t.ticket_status;
+      if (!selectedStatuses.has(statusKey)) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const fields = [
@@ -195,7 +197,7 @@ export function TicketListPage() {
       if (agencyFilter !== 'ALL' && t.agency_id.toString() !== agencyFilter) return false;
       return true;
     }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  }, [tickets, searchQuery, categoryFilter, agencyFilter]);
+  }, [tickets, searchQuery, selectedStatuses, categoryFilter, agencyFilter]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -336,6 +338,7 @@ export function TicketListPage() {
             <div className="flex gap-3.5 overflow-x-auto pb-2 items-start">
               {/* Reopened column — only visible when reopened tickets exist */}
               {(() => {
+                if (!selectedStatuses.has('REOPENED')) return null;
                 const reopenedTickets = filteredTickets.filter((t) => t.is_reopen);
                 if (reopenedTickets.length === 0) return null;
                 return (
@@ -365,7 +368,7 @@ export function TicketListPage() {
               })()}
 
               {/* Status columns */}
-              {KANBAN_COLUMNS.map((col) => {
+              {KANBAN_COLUMNS.filter((col) => selectedStatuses.has(col.key)).map((col) => {
                 const colTickets = filteredTickets.filter(
                   (t) => t.ticket_status === col.key && !t.is_reopen
                 );
