@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, X, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { IMAGE_EXTENSIONS, ALLOWED_EXTENSIONS } from '../constants';
 
 interface MessageInputProps {
   onSend: (msg: string, files: File[]) => void;
@@ -9,10 +10,7 @@ interface MessageInputProps {
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
-const VIDEO_EXTENSIONS = ['mp4', 'webm', 'ogg'];
-const DOC_EXTENSIONS = ['pdf', 'doc', 'docx', 'txt'];
-const ALLOWED_EXTENSIONS = [...IMAGE_EXTENSIONS, ...VIDEO_EXTENSIONS, ...DOC_EXTENSIONS];
+const MAX_FILE_COUNT = 5;
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -90,6 +88,15 @@ export function MessageInput({ onSend, disabled, sending }: MessageInputProps) {
     }
 
     if (accepted.length === 0) return;
+    const remaining = MAX_FILE_COUNT - files.length;
+    if (remaining <= 0) {
+      toast.error(`You can attach up to ${MAX_FILE_COUNT} files at a time`);
+      return;
+    }
+    if (accepted.length > remaining) {
+      toast.error(`You can attach up to ${MAX_FILE_COUNT} files at a time`);
+      accepted.splice(remaining);
+    }
     setFiles((prev) => [...prev, ...accepted]);
     setPreviews((prev) => ({ ...prev, ...newPreviews }));
   };

@@ -2,23 +2,11 @@ import React, { useState } from 'react';
 import { Paperclip } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ChatMessage, ChatAttachment } from '../types';
+import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, MIME_BY_EXTENSION } from '../constants';
 
 interface MessageBubbleProps {
   message: ChatMessage;
 }
-
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
-const VIDEO_EXTENSIONS = ['mp4', 'webm', 'ogg'];
-
-const MIME_BY_EXTENSION: Record<string, string> = {
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  gif: 'image/gif',
-  webp: 'image/webp',
-  svg: 'image/svg+xml',
-  pdf: 'application/pdf',
-};
 
 function getExtension(path: string) {
   return path.split('?')[0].split('.').pop()?.toLowerCase() ?? '';
